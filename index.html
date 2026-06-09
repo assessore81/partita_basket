@@ -34,11 +34,9 @@
     font-family: 'Barlow', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
-    /* spazio per la barra in basso */
     padding-bottom: var(--nav-height);
   }
 
-  /* ─── HEADER ─── */
   header {
     background: linear-gradient(135deg, var(--blue-dark) 0%, #001a5e 100%);
     border-bottom: 3px solid var(--orange);
@@ -173,7 +171,6 @@
   }
   .away-btn:active { transform: scale(.92); filter: brightness(1.2); }
 
-  /* ─── TEAM NAME INPUT ─── */
   .team-name-input {
     background: transparent;
     border: none;
@@ -190,14 +187,12 @@
     padding: 1px 2px;
   }
 
-  /* ─── MAIN CONTENT ─── */
   .main {
     padding: 12px 10px;
     max-width: 700px;
     margin: 0 auto;
   }
 
-  /* ─── PLAYER CARD ─── */
   .player-card {
     background: var(--surface);
     border-radius: var(--radius);
@@ -209,7 +204,6 @@
 
   .player-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
 
-  /* Flash highlight quando si naviga verso un giocatore */
   .player-card.highlight {
     border-color: var(--orange);
     box-shadow: 0 0 0 2px rgba(255,107,0,0.4), 0 4px 20px rgba(255,107,0,0.2);
@@ -422,7 +416,6 @@
     color: var(--text-dim);
   }
 
-  /* ─── PRESENCE TOGGLE ─── */
   .btn-presence {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 11px;
@@ -448,7 +441,6 @@
     border: 1px solid rgba(255,255,255,0.1);
   }
 
-  /* ─── INACTIVE CARD ─── */
   .player-inactive {
     opacity: 0.45;
   }
@@ -456,7 +448,6 @@
     background: var(--darker);
   }
 
-  /* ─── FOOTER TOTALS ─── */
   .totals-bar {
     background: linear-gradient(135deg, var(--blue-dark), #001a5e);
     border-radius: var(--radius);
@@ -494,7 +485,6 @@
     font-size: 28px;
   }
 
-  /* ─── FAB ─── */
   .fab {
     position: fixed;
     bottom: calc(var(--nav-height) + 12px);
@@ -516,7 +506,6 @@
   }
   .fab:active { transform: scale(.92); }
 
-  /* ─── BOTTOM NAV BAR ─── */
   .player-nav {
     position: fixed;
     bottom: 0;
@@ -575,7 +564,6 @@
     line-height: 1;
   }
 
-  /* Pallino fallo sopra il chip */
   .nav-chip-foul {
     position: absolute;
     top: -5px;
@@ -596,7 +584,6 @@
   }
   .nav-chip-foul.hidden { display: none; }
 
-  /* Puntino verde "presente" in basso al chip */
   .nav-chip-pts {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 10px;
@@ -607,7 +594,6 @@
   }
   .nav-chip-pts.has-pts { color: var(--orange-light); }
 
-  /* ─── MODAL OVERLAY (QUARTER) ─── */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -635,7 +621,6 @@
     to { transform: translateY(0); }
   }
 
-  /* ─── STATS FULLSCREEN PAGE ─── */
   .stats-view-container {
     display: none;
     padding: 16px 10px 40px;
@@ -725,7 +710,6 @@
   }
 
   .score-final { display: flex; align-items: center; gap: 12px; }
-
   .score-final-team { text-align: center; }
 
   .score-final-name {
@@ -746,7 +730,7 @@
 
   .score-final-pts.home { color: var(--orange); }
   .score-final-pts.away { color: #64b5f6; }
-  .score-final-sep { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; color: var(--text-dim); }
+  .score-final-sep { font-family: 'Barlow Condensed',sans-serif; font-size: 28px; color: var(--text-dim); }
 
   .q-boxes-wrapper {
     display: flex;
@@ -820,7 +804,6 @@
     width: 100%;
   }
 
-  /* Status indicator Firebase */
   .firebase-status {
     position: fixed;
     top: 10px;
@@ -831,17 +814,11 @@
     background: #4caf50;
     box-shadow: 0 0 8px rgba(76,175,80,0.6);
     z-index: 999;
-    animation: blink-online .2s;
   }
 
   .firebase-status.offline {
     background: #ff9800;
-    animation: blink-offline .5s infinite;
-  }
-
-  @keyframes blink-online {
-    from { opacity: 0.5; }
-    to { opacity: 1; }
+    animation: blink-offline 0.5s infinite;
   }
 
   @keyframes blink-offline {
@@ -852,10 +829,8 @@
 </head>
 <body>
 
-<!-- Status indicator Firebase -->
 <div class="firebase-status" id="firebaseStatus"></div>
 
-<!-- WRAPPER APP PRINCIPALE -->
 <div id="appView">
   <header>
     <div class="header-top">
@@ -900,15 +875,12 @@
     </div>
   </div>
 
-  <!-- FAB statistiche -->
   <button class="fab" onclick="openStats()" title="Statistiche">📊</button>
 
-  <!-- BARRA NAVIGAZIONE GIOCATORI (fissa in basso) -->
   <nav class="player-nav" id="playerNav">
     <div class="player-nav-inner" id="playerNavInner"></div>
   </nav>
 
-  <!-- QUARTER CONFIRM MODAL -->
   <div class="modal-overlay" id="quarterModal">
     <div class="modal" style="border-top-color: var(--blue-mid); max-height: unset; padding: 24px 20px 28px;">
       <div class="modal-title" style="color:var(--orange); margin-bottom:10px;">&#9201; Fine Quarto <span id="qModalNum">1</span></div>
@@ -933,9 +905,7 @@
     </div>
   </div>
 </div>
-<!-- FINE WRAPPER APP -->
 
-<!-- SCHERMATA STATISTICHE -->
 <div id="statsView" class="stats-view-container">
   <div class="stats-card">
     <div class="modal-title">📊 RIEPILOGO PARTITA</div>
@@ -976,7 +946,6 @@
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -993,90 +962,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Variabili globali
 window.db = db;
 window.doc = doc;
 window.setDoc = setDoc;
-window.getDoc = getDoc;
-window.onSnapshot = onSnapshot;
 window.firebaseReady = true;
 
-// Carica da Firestore al startup
-loadFromFirebase();
-
-async function loadFromFirebase() {
-  try {
-    const docRef = doc(db, "matches", "current");
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      window.players = data.players || window.players;
-      window.awayScore = data.awayScore || 0;
-      window.quarter = data.quarter || 1;
-      window.quarterHistory = data.quarterHistory || [];
-      window.quarterStartHome = data.quarterStartHome || 0;
-      window.quarterStartAway = data.quarterStartAway || 0;
-      
-      document.getElementById('homeName').value = data.homeTeam || 'PONTE DI NONA';
-      document.getElementById('awayName').value = data.awayTeam || 'AVVERSARIO';
-      
-      render();
-      updateFirebaseStatus(true);
-    } else {
-      updateFirebaseStatus(true);
-    }
-  } catch (e) {
-    console.warn('Firebase non disponibile, usando localStorage', e);
-    updateFirebaseStatus(false);
-  }
-}
-
-window.saveToFirebase = async function() {
-  if (!window.firebaseReady) return;
-  
+async function saveToFirebase() {
   try {
     const homeScore = parseInt(document.getElementById('homeScore').textContent) || 0;
     const homeName = document.getElementById('homeName').value || 'PONTE DI NONA';
     const awayName = document.getElementById('awayName').value || 'AVVERSARIO';
     
-    const docRef = window.doc(window.db, "matches", "current");
-    await window.setDoc(docRef, {
+    const docRef = doc(db, "matches", "current");
+    await setDoc(docRef, {
       homeTeam: homeName,
       awayTeam: awayName,
-      homeScore: parseInt(homeScore) || 0,
-      awayScore: parseInt(window.awayScore) || 0,
-      quarter: parseInt(window.quarter) || 1,
+      homeScore: homeScore,
+      awayScore: window.awayScore || 0,
+      quarter: window.quarter || 1,
       players: window.players || [],
       quarterHistory: window.quarterHistory || [],
-      quarterStartHome: parseInt(window.quarterStartHome) || 0,
-      quarterStartAway: parseInt(window.quarterStartAway) || 0,
+      quarterStartHome: window.quarterStartHome || 0,
+      quarterStartAway: window.quarterStartAway || 0,
       updatedAt: new Date()
     }, { merge: true });
     
-    window.updateFirebaseStatus(true);
+    document.getElementById('firebaseStatus').classList.remove('offline');
+    console.log('Salvato su Firestore');
   } catch (e) {
-    console.warn('Errore salvataggio Firestore', e);
-    window.updateFirebaseStatus(false);
+    console.error('Errore Firestore:', e);
+    document.getElementById('firebaseStatus').classList.add('offline');
   }
-};
-    
-    updateFirebaseStatus(true);
-  } catch (e) {
-    console.warn('Errore salvataggio Firestore', e);
-    updateFirebaseStatus(false);
-  }
-};
+}
 
-window.updateFirebaseStatus = function(online) {
-  const status = document.getElementById('firebaseStatus');
-  if (online) {
-    status.classList.remove('offline');
-  } else {
-    status.classList.add('offline');
-  }
-};
-
+window.saveToFirebase = saveToFirebase;
 </script>
 
 <script>
@@ -1119,7 +1038,6 @@ function save() {
   localStorage.setItem('bball_qstart_home', quarterStartHome);
   localStorage.setItem('bball_qstart_away', quarterStartAway);
   
-  // Salva anche su Firestore
   if (window.firebaseReady) {
     saveToFirebase();
   }
@@ -1127,11 +1045,6 @@ function save() {
 
 function totalPts(p) { return p.pt1 + p.pt2*2 + p.pt3*3; }
 
-/**
- * Estrae il numero di maglia dal nome del giocatore.
- * Formati supportati: "04 - NOME", "04-NOME", "4 NOME"
- * Se non trova un numero restituisce "?"
- */
 function extractJerseyNumber(name) {
   const match = name.match(/^(\d+)\s*[-–]?\s*/);
   if (match) {
@@ -1141,7 +1054,6 @@ function extractJerseyNumber(name) {
   return '?';
 }
 
-/* ─── RENDER BARRA NAVIGAZIONE ─── */
 function renderNav() {
   const inner = document.getElementById('playerNavInner');
   inner.innerHTML = '';
@@ -1167,7 +1079,6 @@ function renderNav() {
   });
 }
 
-/* ─── SCROLL AL GIOCATORE + FLASH ─── */
 function scrollToPlayer(idx) {
   const card = document.getElementById(`player-card-${idx}`);
   if (!card) return;
@@ -1184,7 +1095,6 @@ function scrollToPlayer(idx) {
   setTimeout(() => card.classList.remove('highlight'), 900);
 }
 
-/* ─── RENDER PRINCIPALE ─── */
 function render() {
   const list = document.getElementById('playerList');
   list.innerHTML = '';
@@ -1413,7 +1323,6 @@ function confirmReset() {
   }
 }
 
-// Init
 render();
 document.getElementById('quarterBadge').textContent = quarter;
 const savedAwayName = localStorage.getItem('bball_awayname');
@@ -1425,6 +1334,6 @@ document.getElementById('homeName').addEventListener('input', function() {
   save();
 });
 </script>
+
 </body>
 </html>
-
