@@ -978,12 +978,12 @@ async function saveToFirebase() {
       homeTeam: homeName,
       awayTeam: awayName,
       homeScore: homeScore,
-      awayScore: window.awayScore || 0,
-      quarter: window.quarter || 1,
-      players: window.players || [],
-      quarterHistory: window.quarterHistory || [],
-      quarterStartHome: window.quarterStartHome || 0,
-      quarterStartAway: window.quarterStartAway || 0,
+      awayScore: awayScore || 0,
+      quarter: quarter || 1,
+      players: players || [],
+      quarterHistory: quarterHistory || [],
+      quarterStartHome: quarterStartHome || 0,
+      quarterStartAway: quarterStartAway || 0,
       updatedAt: new Date()
     }, { merge: true });
     
