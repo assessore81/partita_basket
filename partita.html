@@ -150,7 +150,7 @@
     padding: 20px;
     margin-bottom: 20px;
     border-left: 4px solid var(--orange);
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
   }
 
   .last-scorer-label {
@@ -183,44 +183,7 @@
     color: var(--orange);
   }
 
-  /* ─── STATS GRID ─── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .stat-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .stat-value {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 32px;
-    font-weight: 900;
-    color: var(--text);
-  }
-
-  .stat-value.fouls {
-    color: var(--foul-red);
-  }
-
-  /* ─── PLAYERS ON COURT ─── */
+  /* ─── PLAYERS SECTION ─── */
   .players-section {
     background: var(--surface);
     border-radius: 15px;
@@ -353,10 +316,6 @@
     .separator {
       font-size: 45px;
     }
-
-    .stats-grid {
-      grid-template-columns: 1fr 1fr;
-    }
   }
 </style>
 </head>
@@ -401,23 +360,8 @@ console.log("Pagina partita.html caricata");
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Giocatori in Campo</div>
-        <div class="stat-value" id="activePlayers">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Falli CASA</div>
-        <div class="stat-value fouls" id="homeFouls">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Falli AVV</div>
-        <div class="stat-value fouls" id="awayFouls">0</div>
-      </div>
-    </div>
-
     <div class="players-section">
-      <div class="section-title">👥 Giocatori in Campo</div>
+      <div class="section-title">👥 Convocati</div>
       <div id="playersList"></div>
     </div>
   </div>
@@ -445,9 +389,14 @@ const db = getFirestore(app);
 
 console.log("Firebase inizializzato");
 
-// Ascolta i cambiamenti del documento "current" in tempo reale
 const docRef = doc(db, "matches", "current");
+
+// Variabili globali di stato per intercettare i canestri in tempo reale
 let lastHomeScore = 0;
+let prevHomeScore = null;
+let prevAwayScore = null;
+let prevPlayersState = null;
+let currentNotification = JSON.parse(localStorage.getItem('live_last_notification') || 'null');
 
 console.log("Inizio ascolto Firestore...");
 
@@ -458,6 +407,10 @@ const unsubscribe = onSnapshot(
     if (docSnap.exists()) {
       const data = docSnap.data();
       console.log("Dati Firestore:", data);
+      
+      // Analizza le variazioni per calcolare la notifica canestro
+      detectChanges(data);
+      
       updateUI(data);
       updateFirebaseStatus(true);
     } else {
@@ -481,6 +434,75 @@ function updateFirebaseStatus(online) {
   }
 }
 
+function detectChanges(data) {
+  const homeScore = data.homeScore || 0;
+  const awayScore = data.awayScore || 0;
+  const homeTeam = data.homeTeam || 'PONTE';
+  const awayTeam = data.awayTeam || 'AVV';
+  const players = data.players || [];
+
+  // Al primo avvio della pagina salviamo lo stato iniziale senza generare false notifiche
+  if (prevHomeScore === null || prevAwayScore === null || prevPlayersState === null) {
+    prevHomeScore = homeScore;
+    prevAwayScore = awayScore;
+    prevPlayersState = {};
+    players.forEach(p => {
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      prevPlayersState[p.name] = pts;
+    });
+    return;
+  }
+
+  // Rilevamento canestro Squadra In Casa
+  if (homeScore > prevHomeScore) {
+    const delta = homeScore - prevHomeScore;
+    let scorerName = homeTeam;
+    let pointText = '+' + delta;
+
+    // Cerca quale giocatore specifico ha aumentato i suoi punti
+    for (let p of players) {
+      const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      const prevPts = prevPlayersState[p.name] || 0;
+      if (currentPts > prevPts) {
+        scorerName = p.name;
+        pointText = '+' + (currentPts - prevPts);
+        break;
+      }
+    }
+
+    currentNotification = {
+      team: 'home',
+      name: scorerName,
+      text: pointText
+    };
+    localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
+  }
+  // Rilevamento canestro Squadra Ospite
+  else if (awayScore > prevAwayScore) {
+    const delta = awayScore - prevAwayScore;
+    currentNotification = {
+      team: 'away',
+      name: awayTeam,
+      text: '+' + delta
+    };
+    localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
+  }
+  // Se la partita viene azzerata o i punteggi calano (Reset)
+  else if (homeScore < prevHomeScore || awayScore < prevAwayScore) {
+    currentNotification = null;
+    localStorage.removeItem('live_last_notification');
+  }
+
+  // Memorizza i dati attuali come base di confronto per il prossimo snapshot
+  prevHomeScore = homeScore;
+  prevAwayScore = awayScore;
+  prevPlayersState = {};
+  players.forEach(p => {
+    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+    prevPlayersState[p.name] = pts;
+  });
+}
+
 function updateUI(data) {
   const {
     homeTeam = 'PONTE',
@@ -488,15 +510,14 @@ function updateUI(data) {
     homeScore = 0,
     awayScore = 0,
     quarter = 1,
-    players = [],
-    lastAction = null // Recuperiamo l'ultima azione salvata
+    players = []
   } = data;
 
-  // Update scoreboard
+  // Aggiorna nomi squadre
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
   
-  // Anima il punteggio se è cambiato
+  // Animazione del punteggio di casa
   const homeScoreEl = document.getElementById('homeScore');
   if (homeScore !== lastHomeScore) {
     homeScoreEl.style.animation = 'none';
@@ -512,49 +533,59 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
-  // Calcola statistiche dei giocatori in campo
-  let totalHomeFouls = 0;
-  let activePlayers = 0;
+  // Elabora i convocati attivi
   const activePlayers_list = [];
-
   players.forEach((p) => {
     if (p.active) {
-      activePlayers++;
-      totalHomeFouls += p.fouls || 0;
       activePlayers_list.push(p);
     }
   });
 
-  // Update stats veloci
-  document.getElementById('activePlayers').textContent = activePlayers;
-  document.getElementById('homeFouls').textContent = totalHomeFouls;
-  document.getElementById('awayFouls').textContent = 0;
-
-  // ─── NUOVA GESTIONE NOTIFICA IN TEMPO REALE ───
+  // ─── RENDERING NOTIFICA DI CANESTRO IN REAL-TIME ───
   const lastScorerSection = document.getElementById('lastScorerSection');
-  if (lastAction) {
+  const pointsEl = document.getElementById('lastScorerPoints');
+  const labelEl = document.getElementById('lastScorerLabel');
+
+  if (currentNotification) {
     lastScorerSection.style.display = 'block';
-    document.getElementById('lastScorerName').textContent = lastAction.name;
-    document.getElementById('lastScorerPoints').textContent = lastAction.text;
+    document.getElementById('lastScorerName').textContent = currentNotification.name;
+    pointsEl.textContent = currentNotification.text;
     
-    const pointsEl = document.getElementById('lastScorerPoints');
-    const labelEl = document.getElementById('lastScorerLabel');
-    
-    // Cambia stile e label dinamicamente in base a chi ha segnato
-    if (lastAction.team === 'away') {
-      lastScorerSection.style.borderLeft = '4px solid #64b5f6'; // Blu avversario
+    if (currentNotification.team === 'away') {
+      lastScorerSection.style.borderLeft = '4px solid #64b5f6'; // Blu
       pointsEl.style.color = '#64b5f6';
       labelEl.textContent = '⚡ Canestro avversario';
     } else {
-      lastScorerSection.style.borderLeft = '4px solid var(--orange)'; // Arancione casa
+      lastScorerSection.style.borderLeft = '4px solid var(--orange)'; // Arancione
       pointsEl.style.color = 'var(--orange)';
       labelEl.textContent = '⭐ Ultimo marcatore';
     }
   } else {
-    lastScorerSection.style.display = 'none';
+    // Fallback: se non c'è una notifica live registrata ma la partita è in corso,
+    // mostra provvisoriamente il miglior marcatore di casa
+    let topScorer = null;
+    let maxPts = 0;
+    players.forEach((p) => {
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      if (pts > maxPts) {
+        maxPts = pts;
+        topScorer = p.name;
+      }
+    });
+
+    if (topScorer && maxPts > 0) {
+      lastScorerSection.style.display = 'block';
+      document.getElementById('lastScorerName').textContent = topScorer;
+      pointsEl.textContent = maxPts;
+      pointsEl.style.color = 'var(--orange)';
+      lastScorerSection.style.borderLeft = '4px solid var(--orange)';
+      labelEl.textContent = '⭐ Miglior marcatore';
+    } else {
+      lastScorerSection.style.display = 'none';
+    }
   }
 
-  // Update players list
+  // Genera la lista dei Convocati
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
 
@@ -579,7 +610,7 @@ function updateUI(data) {
   document.getElementById('mainView').style.display = 'block';
 }
 
-// Gestisci errori di connessione
+// Gestisci errori di connessione internet
 window.addEventListener('offline', () => updateFirebaseStatus(false));
 window.addEventListener('online', () => updateFirebaseStatus(true));
 
