@@ -83,9 +83,9 @@
 
   .score-big {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 100px; /* Ingrandito da 80px */
+    font-size: 110px; /* INGRANDITO DA 80px */
     font-weight: 900;
-    line-height: 1;
+    line-height: 0.95;
     margin-bottom: 10px;
   }
 
@@ -118,29 +118,31 @@
     margin: 0 10px;
   }
 
-  /* ─── BLOCCO QUARTI (ATTUALE E STORICIZZATI) ─── */
-  .quarters-row {
+  /* ─── CONTENITORE RIGA QUARTI (ATTUALE + STORICO) ─── */
+  .quarters-container-row {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: stretch;
     margin-top: 15px;
+    justify-content: center;
   }
 
-  .quarter-info-compact {
+  /* BOX QUARTO ATTUALE RIDOTTO */
+  .quarter-info {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 6px 12px;
     text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-width: 75px;
+    min-width: 80px;
   }
 
-  .quarter-info-compact .quarter-label {
+  .quarter-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
+    font-size: 11px; /* RIDOTTO DA 13px */
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--text-dim);
@@ -148,58 +150,60 @@
     margin-bottom: 2px;
   }
 
-  .quarter-info-compact .quarter-number {
+  .quarter-number {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
+    font-size: 26px; /* RIDOTTO DA 36px */
     font-weight: 900;
     color: var(--orange);
     line-height: 1;
   }
 
-  .quarter-history-live {
+  /* STORICO QUARTI INGRANDITO */
+  .quarters-history {
     flex: 1;
     display: flex;
     gap: 8px;
+    justify-content: flex-start;
     overflow-x: auto;
   }
 
-  .q-live-box {
+  .q-box {
     flex: 1;
     background: rgba(0, 0, 0, 0.25);
-    border: 2px solid rgba(255, 107, 0, 0.45);
+    border: 2px solid rgba(255, 107, 0, 0.5); /* BORDO ARANCIONE DEDICATO PIÙ EVIDENTE */
     border-radius: 12px;
-    padding: 6px 10px;
+    padding: 8px 14px; /* MAGGIORE SPAZIATURA */
+    text-align: center;
+    min-width: 70px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    min-width: 60px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
 
-  .q-live-label {
+  .q-box-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 12px; /* INGRANDITO DA 11px */
+    font-weight: 800;
     color: var(--text-dim);
-    letter-spacing: 0.5px;
     text-transform: uppercase;
-    margin-bottom: 1px;
+    margin-bottom: 3px;
+    letter-spacing: 0.5px;
   }
 
-  .q-live-scores {
+  .q-box-row {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
+    font-size: 20px; /* INGRANDITO DA 14px PER MASSIMA LEGGIBILITÀ */
     font-weight: 900;
     line-height: 1;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 3px;
   }
 
-  .q-live-home { color: var(--orange); }
-  .q-live-away { color: #64b5f6; }
-  .q-live-sep { color: var(--text-dim); font-size: 14px; font-weight: 400; }
+  .q-box-h { color: var(--orange); }
+  .q-box-sep { color: var(--text-dim); margin: 0 3px; font-size: 14px; font-weight: 400; }
+  .q-box-a { color: #64b5f6; }
 
   /* ─── LAST SCORER ─── */
   .last-scorer-section {
@@ -208,6 +212,7 @@
     padding: 20px;
     margin-bottom: 20px;
     border-left: 4px solid var(--orange);
+    transition: all 0.3s ease;
   }
 
   .last-scorer-label {
@@ -240,49 +245,13 @@
     color: var(--orange);
   }
 
-  /* ─── STATS GRID ─── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .stat-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .stat-value {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 32px;
-    font-weight: 900;
-    color: var(--text);
-  }
-
-  .stat-value.fouls {
-    color: var(--foul-red);
-  }
-
-  /* ─── PLAYERS ON COURT ─── */
+  /* ─── PLAYERS SECTION ─── */
   .players-section {
     background: var(--surface);
     border-radius: 15px;
     padding: 20px;
     border-top: 3px solid var(--orange);
+    margin-bottom: 20px;
   }
 
   .section-title {
@@ -292,7 +261,17 @@
     letter-spacing: 1px;
     text-transform: uppercase;
     color: var(--orange);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .section-title.bench {
+    color: var(--text-dim);
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 15px;
   }
 
   .player-row {
@@ -303,7 +282,6 @@
     background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
     margin-bottom: 8px;
-    border-left: 3px solid var(--orange);
   }
 
   .player-name {
@@ -312,22 +290,40 @@
     font-weight: 600;
     color: var(--text);
     flex: 1;
+    padding-right: 10px;
   }
 
   .player-stats {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
+  }
+
+  .player-breakdown {
+    display: flex;
+    gap: 4px;
+  }
+
+  .pt-pill {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
   }
 
   .player-pts {
     background: var(--orange);
     color: white;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 900;
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -335,17 +331,38 @@
   }
 
   .player-fouls {
-    background: rgba(239, 83, 80, 0.2);
-    color: var(--foul-red);
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .player-fouls.f-zero {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+  }
+
+  .player-fouls.f-active {
+    background: rgba(239, 83, 80, 0.2);
+    color: var(--foul-red);
+  }
+
+  .player-fouls.f-danger {
+    background: var(--foul-red);
+    color: white;
+  }
+
+  .empty-list-msg {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-style: italic;
+    padding: 10px 5px;
   }
 
   /* ─── NO DATA ─── */
@@ -404,24 +421,21 @@
     }
 
     .score-big {
-      font-size: 75px; /* Ingrandito da 60px */
+      font-size: 85px; /* INGRANDITO IN MOBILE DA 60px */
     }
 
     .separator {
       font-size: 45px;
     }
 
-    .stats-grid {
-      grid-template-columns: 1fr 1fr;
+    .pt-pill {
+      font-size: 10px;
+      padding: 1px 3px;
     }
   }
 </style>
 </head>
 <body>
-
-<script>
-console.log("Pagina partita.html caricata");
-</script>
   
 <div class="firebase-status" id="firebaseStatus"></div>
 
@@ -444,52 +458,37 @@ console.log("Pagina partita.html caricata");
         </div>
       </div>
 
-      <div class="quarters-row">
-        <div class="quarter-info-compact">
+      <div class="quarters-container-row">
+        <div class="quarter-info">
           <div class="quarter-label">Quarto</div>
           <div class="quarter-number" id="quarterNumber">1</div>
         </div>
-        <div class="quarter-history-live" id="quarterHistoryLive"></div>
+
+        <div class="quarters-history" id="quartersHistoryContainer" style="display: none;"></div>
       </div>
     </div>
 
     <div class="last-scorer-section" id="lastScorerSection" style="display: none;">
-      <div class="last-scorer-label">⭐ Ultimo marcatore</div>
+      <div class="last-scorer-label" id="lastScorerLabel">⭐ Ultimo marcatore</div>
       <div class="last-scorer-info">
         <div class="scorer-name" id="lastScorerName">-</div>
         <div class="scorer-points" id="lastScorerPoints">0</div>
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Giocatori in Campo</div>
-        <div class="stat-value" id="activePlayers">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Falli CASA</div>
-        <div class="stat-value fouls" id="homeFouls">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Falli AVV</div>
-        <div class="stat-value fouls" id="awayFouls">0</div>
-      </div>
-    </div>
-
     <div class="players-section">
-      <div class="section-title">👥 Giocatori in Campo</div>
-      <div id="playersList"></div>
+      <div class="section-title">🏀 In Campo</div>
+      <div id="playersOnCourt"></div>
+      
+      <div class="section-title bench">🛋️ A Disposizione</div>
+      <div id="playersOnBench"></div>
     </div>
   </div>
 </div>
 
 <script type="module">
-console.log("Inizio caricamento Firebase");
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-console.log("Firebase SDK importato");
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtkWH5ekxU7YK-LvXLR0hhb-cyrFmxc34",
@@ -503,25 +502,23 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-console.log("Firebase inizializzato");
-
-// Ascolta i cambiamenti del documento "current" in tempo reale
 const docRef = doc(db, "matches", "current");
-let lastHomeScore = 0;
 
-console.log("Inizio ascolto Firestore...");
+let lastHomeScore = 0;
+let prevHomeScore = null;
+let prevAwayScore = null;
+let prevPlayersState = null;
+let currentNotification = JSON.parse(localStorage.getItem('live_last_notification') || 'null');
 
 const unsubscribe = onSnapshot(
   docRef,
   (docSnap) => {
-    console.log("Snapshot ricevuto", docSnap.exists());
     if (docSnap.exists()) {
       const data = docSnap.data();
-      console.log("Dati Firestore:", data);
+      detectChanges(data);
       updateUI(data);
       updateFirebaseStatus(true);
     } else {
-      console.log("Documento non esiste");
       document.getElementById('noDataView').style.display = 'block';
       document.getElementById('mainView').style.display = 'none';
     }
@@ -541,6 +538,61 @@ function updateFirebaseStatus(online) {
   }
 }
 
+function detectChanges(data) {
+  const homeScore = data.homeScore || 0;
+  const awayScore = data.awayScore || 0;
+  const homeTeam = data.homeTeam || 'PONTE';
+  const awayTeam = data.awayTeam || 'AVV';
+  const players = data.players || [];
+
+  if (prevHomeScore === null || prevAwayScore === null || prevPlayersState === null) {
+    prevHomeScore = homeScore;
+    prevAwayScore = awayScore;
+    prevPlayersState = {};
+    players.forEach(p => {
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      prevPlayersState[p.name] = pts;
+    });
+    return;
+  }
+
+  if (homeScore > prevHomeScore) {
+    const delta = homeScore - prevHomeScore;
+    let scorerName = homeTeam;
+    let pointText = '+' + delta;
+
+    for (let p of players) {
+      const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      const prevPts = prevPlayersState[p.name] || 0;
+      if (currentPts > prevPts) {
+        scorerName = p.name;
+        pointText = '+' + (currentPts - prevPts);
+        break;
+      }
+    }
+
+    currentNotification = { team: 'home', name: scorerName, text: pointText };
+    localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
+  }
+  else if (awayScore > prevAwayScore) {
+    const delta = awayScore - prevAwayScore;
+    currentNotification = { team: 'away', name: awayTeam, text: '+' + delta };
+    localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
+  }
+  else if (homeScore < prevHomeScore || awayScore < prevAwayScore) {
+    currentNotification = null;
+    localStorage.removeItem('live_last_notification');
+  }
+
+  prevHomeScore = homeScore;
+  prevAwayScore = awayScore;
+  prevPlayersState = {};
+  players.forEach(p => {
+    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+    prevPlayersState[p.name] = pts;
+  });
+}
+
 function updateUI(data) {
   const {
     homeTeam = 'PONTE',
@@ -548,15 +600,13 @@ function updateUI(data) {
     homeScore = 0,
     awayScore = 0,
     quarter = 1,
-    players = [],
-    quarterHistory = []
+    quarterHistory = [],
+    players = []
   } = data;
 
-  // Update scoreboard
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
   
-  // Anima il punteggio se è cambiato
   const homeScoreEl = document.getElementById('homeScore');
   if (homeScore !== lastHomeScore) {
     homeScoreEl.style.animation = 'none';
@@ -572,90 +622,130 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
-  // Render dei Quarti Storicizzati Ingranditi
-  const qHistoryLive = document.getElementById('quarterHistoryLive');
-  qHistoryLive.innerHTML = '';
+  const qContainer = document.getElementById('quartersHistoryContainer');
+  qContainer.innerHTML = '';
   if (quarterHistory && quarterHistory.length > 0) {
-    quarterHistory.forEach(entry => {
+    quarterHistory.forEach((entry) => {
       const box = document.createElement('div');
-      box.className = 'q-live-box';
+      box.className = 'q-box';
       box.innerHTML = `
-        <div class="q-live-label">Q${entry.q}</div>
-        <div class="q-live-scores">
-          <span class="q-live-home">${entry.home}</span>
-          <span class="q-live-sep">-</span>
-          <span class="q-live-away">${entry.away}</span>
+        <div class="q-box-label">Q${entry.q}</div>
+        <div class="q-box-row">
+          <span class="q-box-h">${entry.home}</span>
+          <span class="q-box-sep">-</span>
+          <span class="q-box-a">${entry.away}</span>
         </div>
       `;
-      qHistoryLive.appendChild(box);
+      qContainer.appendChild(box);
     });
+    qContainer.style.display = 'flex';
+  } else {
+    qContainer.style.display = 'none';
   }
 
-  // Calcola statistiche
-  let totalHomeFouls = 0;
-  let activePlayers = 0;
-  let lastScorer = null;
-  let lastScorerPoints = 0;
+  const lastScorerSection = document.getElementById('lastScorerSection');
+  const pointsEl = document.getElementById('lastScorerPoints');
+  const labelEl = document.getElementById('lastScorerLabel');
 
-  const activePlayers_list = [];
+  if (currentNotification) {
+    lastScorerSection.style.display = 'block';
+    document.getElementById('lastScorerName').textContent = currentNotification.name;
+    pointsEl.textContent = currentNotification.text;
+    
+    if (currentNotification.team === 'away') {
+      lastScorerSection.style.borderLeft = '4px solid #64b5f6';
+      pointsEl.style.color = '#64b5f6';
+      labelEl.textContent = '⚡ Canestro avversario';
+    } else {
+      lastScorerSection.style.borderLeft = '4px solid var(--orange)';
+      pointsEl.style.color = 'var(--orange)';
+      labelEl.textContent = '⭐ Ultimo marcatore';
+    }
+  } else {
+    let topScorer = null;
+    let maxPts = 0;
+    players.forEach((p) => {
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      if (pts > maxPts) {
+        maxPts = pts;
+        topScorer = p.name;
+      }
+    });
+
+    if (topScorer && maxPts > 0) {
+      lastScorerSection.style.display = 'block';
+      document.getElementById('lastScorerName').textContent = topScorer;
+      pointsEl.textContent = maxPts;
+      pointsEl.style.color = 'var(--orange)';
+      lastScorerSection.style.borderLeft = '4px solid var(--orange)';
+      labelEl.textContent = '⭐ Miglior marcatore';
+    } else {
+      lastScorerSection.style.display = 'none';
+    }
+  }
+
+  // ELEMENTI DELLE DUE LISTE SEPARATE
+  const courtContainer = document.getElementById('playersOnCourt');
+  const benchContainer = document.getElementById('playersOnBench');
+  courtContainer.innerHTML = '';
+  benchContainer.innerHTML = '';
+
+  let countCourt = 0;
+  let countBench = 0;
 
   players.forEach((p) => {
-    if (p.active) {
-      activePlayers++;
-      totalHomeFouls += p.fouls || 0;
-      activePlayers_list.push(p);
+    if (!p.active) return; // Mostra solo i convocati presenti
 
-      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
-      if (pts > 0 && (lastScorer === null || pts > lastScorerPoints)) {
-        lastScorer = p.name;
-        lastScorerPoints = pts;
-      }
-    }
-  });
-
-  // Update stats
-  document.getElementById('activePlayers').textContent = activePlayers;
-  document.getElementById('homeFouls').textContent = totalHomeFouls;
-  document.getElementById('awayFouls').textContent = 0;
-
-  // Update last scorer
-  if (lastScorer) {
-    document.getElementById('lastScorerSection').style.display = 'block';
-    document.getElementById('lastScorerName').textContent = lastScorer;
-    document.getElementById('lastScorerPoints').textContent = lastScorerPoints;
-  }
-
-  // Update players list
-  const playersList = document.getElementById('playersList');
-  playersList.innerHTML = '';
-
-  activePlayers_list.forEach((p) => {
     const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
     const fouls = p.fouls || 0;
+    const foulClass = fouls >= 4 ? 'f-danger' : (fouls > 0 ? 'f-active' : 'f-zero');
 
     const row = document.createElement('div');
     row.className = 'player-row';
+    
+    // Stile del bordo sinistro differenziato per stato di gioco
+    if (p.onCourt) {
+      row.style.borderLeft = '3px solid var(--green)';
+    } else {
+      row.style.borderLeft = '3px solid var(--text-dim)';
+    }
+
     row.innerHTML = `
       <div class="player-name">${p.name}</div>
       <div class="player-stats">
+        <div class="player-breakdown">
+          <span class="pt-pill">1p: ${p.pt1 || 0}</span>
+          <span class="pt-pill">2p: ${p.pt2 || 0}</span>
+          <span class="pt-pill">3p: ${p.pt3 || 0}</span>
+        </div>
         <div class="player-pts">${pts}</div>
-        ${fouls > 0 ? `<div class="player-fouls">${fouls}</div>` : ''}
+        <div class="player-fouls ${foulClass}">${fouls}</div>
       </div>
     `;
-    playersList.appendChild(row);
+
+    if (p.onCourt) {
+      courtContainer.appendChild(row);
+      countCourt++;
+    } else {
+      benchContainer.appendChild(row);
+      countBench++;
+    }
   });
 
-  // Mostra la view principale
+  // Gestione messaggi vuoti di cortesia
+  if (countCourt === 0) {
+    courtContainer.innerHTML = '<div class="empty-list-msg">Nessun giocatore attualmente in campo</div>';
+  }
+  if (countBench === 0) {
+    benchContainer.innerHTML = '<div class="empty-list-msg">Tutti i convocati sono in campo</div>';
+  }
+
   document.getElementById('noDataView').style.display = 'none';
   document.getElementById('mainView').style.display = 'block';
 }
 
-// Gestisci errori di connessione
 window.addEventListener('offline', () => updateFirebaseStatus(false));
 window.addEventListener('online', () => updateFirebaseStatus(true));
-
-console.log("Script Firebase partita.html completato");
 </script>
-
 </body>
 </html>
