@@ -73,13 +73,8 @@
     margin-bottom: 10px;
   }
 
-  .team.home .team-name {
-    color: var(--orange);
-  }
-
-  .team.away .team-name {
-    color: #64b5f6;
-  }
+  .team.home .team-name { color: var(--orange); }
+  .team.away .team-name { color: #64b5f6; }
 
   .score-big {
     font-family: 'Barlow Condensed', sans-serif;
@@ -159,7 +154,7 @@
     letter-spacing: 1px;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin-bottom: 12px;
+    margin-bottom: 6px;
   }
 
   .last-scorer-info {
@@ -175,11 +170,24 @@
     color: var(--text);
   }
 
+  .scorer-points-box {
+    text-align: right;
+  }
+
   .scorer-points {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 36px;
     font-weight: 900;
     color: var(--orange);
+    line-height: 1;
+  }
+
+  .scorer-type-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
   }
 
   /* ─── STATS GRID ─── */
@@ -215,9 +223,7 @@
     color: var(--text);
   }
 
-  .stat-value.fouls {
-    color: var(--foul-red);
-  }
+  .stat-value.fouls { color: var(--foul-red); }
 
   /* ─── PLAYERS ON COURT ─── */
   .players-section {
@@ -241,53 +247,82 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px;
+    padding: 10px 12px;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
     margin-bottom: 8px;
     border-left: 3px solid var(--orange);
+    gap: 10px;
   }
 
   .player-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--text);
     flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .player-stats {
     display: flex;
-    gap: 12px;
+    gap: 6px;
     align-items: center;
+    flex-shrink: 0;
+  }
+
+  .player-stat-badge {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 2px 4px;
+    text-align: center;
+    min-width: 32px;
+  }
+
+  .player-stat-badge span {
+    display: block;
+    font-size: 8px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 1px;
   }
 
   .player-pts {
     background: var(--orange);
     color: white;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 900;
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .player-fouls {
-    background: rgba(239, 83, 80, 0.2);
+    background: rgba(239, 83, 80, 0.15);
     color: var(--foul-red);
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  
+  .player-fouls.danger {
+    background: var(--foul-red);
+    color: white;
   }
 
   /* ─── NO DATA ─── */
@@ -341,21 +376,13 @@
 
   /* ─── RESPONSIVE ─── */
   @media (max-width: 480px) {
-    .scoreboard-main {
-      padding: 20px 15px;
-    }
-
-    .score-big {
-      font-size: 60px;
-    }
-
-    .separator {
-      font-size: 45px;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr 1fr;
-    }
+    .scoreboard-main { padding: 20px 15px; }
+    .score-big { font-size: 60px; }
+    .separator { font-size: 45px; }
+    .stats-grid { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .player-row { padding: 8px 6px; gap: 4px; }
+    .player-name { font-size: 13px; }
+    .player-stat-badge { min-width: 28px; padding: 2px; }
   }
 </style>
 </head>
@@ -373,7 +400,6 @@ console.log("Pagina partita.html caricata");
   </div>
 
   <div id="mainView" style="display: none;">
-    <!-- SCOREBOARD PRINCIPALE -->
     <div class="scoreboard-main">
       <div class="score-container">
         <div class="team home">
@@ -393,19 +419,20 @@ console.log("Pagina partita.html caricata");
       </div>
     </div>
 
-    <!-- ULTIMO MARCATORE -->
     <div class="last-scorer-section" id="lastScorerSection" style="display: none;">
       <div class="last-scorer-label">⭐ Ultimo marcatore</div>
       <div class="last-scorer-info">
         <div class="scorer-name" id="lastScorerName">-</div>
-        <div class="scorer-points" id="lastScorerPoints">0</div>
+        <div class="scorer-points-box">
+          <div class="scorer-points" id="lastScorerPoints">0</div>
+          <div class="scorer-type-label" id="lastScorerType">Canestro</div>
+        </div>
       </div>
     </div>
 
-    <!-- STATISTICHE RAPIDE -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Giocatori in Campo</div>
+        <div class="stat-label">In Campo</div>
         <div class="stat-value" id="activePlayers">0</div>
       </div>
       <div class="stat-card">
@@ -413,12 +440,10 @@ console.log("Pagina partita.html caricata");
         <div class="stat-value fouls" id="homeFouls">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Falli AVV</div>
-        <div class="stat-value fouls" id="awayFouls">0</div>
+        <div class="stat-label">Falli">AVV</div>
       </div>
     </div>
 
-    <!-- GIOCATORI IN CAMPO -->
     <div class="players-section">
       <div class="section-title">👥 Giocatori in Campo</div>
       <div id="playersList"></div>
@@ -426,7 +451,6 @@ console.log("Pagina partita.html caricata");
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 console.log("Inizio caricamento Firebase");
 
@@ -449,7 +473,6 @@ const db = getFirestore(app);
 
 console.log("Firebase inizializzato");
 
-// Ascolta i cambiamenti del documento "current" in tempo reale
 const docRef = doc(db, "matches", "current");
 let lastHomeScore = 0;
 
@@ -492,14 +515,13 @@ function updateUI(data) {
     homeScore = 0,
     awayScore = 0,
     quarter = 1,
-    players = []
+    players = [],
+    lastScorerAction = null
   } = data;
 
-  // Update scoreboard
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
   
-  // Anima il punteggio se è cambiato
   const homeScoreEl = document.getElementById('homeScore');
   if (homeScore !== lastHomeScore) {
     homeScoreEl.style.animation = 'none';
@@ -515,42 +537,32 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
-  // Calcola statistiche
   let totalHomeFouls = 0;
-  let totalAwayFouls = 0;
-  let activePlayers = 0;
-  let lastScorer = null;
-  let lastScorerPoints = 0;
-
+  let activePlayersCount = 0;
   const activePlayers_list = [];
 
   players.forEach((p) => {
     if (p.active) {
-      activePlayers++;
+      activePlayersCount++;
       totalHomeFouls += p.fouls || 0;
       activePlayers_list.push(p);
-
-      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
-      if (pts > 0 && (lastScorer === null || pts > lastScorerPoints)) {
-        lastScorer = p.name;
-        lastScorerPoints = pts;
-      }
     }
   });
 
-  // Update stats
-  document.getElementById('activePlayers').textContent = activePlayers;
+  document.getElementById('activePlayers').textContent = activePlayersCount;
   document.getElementById('homeFouls').textContent = totalHomeFouls;
-  document.getElementById('awayFouls').textContent = 0;
 
-  // Update last scorer
-  if (lastScorer) {
+  // Gestione dinamica dell'ultimo marcatore con il tipo di tiro (1, 2 o 3 punti)
+  if (lastScorerAction && lastScorerAction.name) {
     document.getElementById('lastScorerSection').style.display = 'block';
-    document.getElementById('lastScorerName').textContent = lastScorer;
-    document.getElementById('lastScorerPoints').textContent = lastScorerPoints;
+    document.getElementById('lastScorerName').textContent = lastScorerAction.name;
+    document.getElementById('lastScorerPoints').textContent = `+${lastScorerAction.type}`;
+    document.getElementById('lastScorerType').textContent = `Tiro da ${lastScorerAction.type}`;
+  } else {
+    document.getElementById('lastScorerSection').style.display = 'none';
   }
 
-  // Update players list
+  // Generazione della lista dei soli giocatori presenti con tutte le statistiche
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
 
@@ -563,24 +575,24 @@ function updateUI(data) {
     row.innerHTML = `
       <div class="player-name">${p.name}</div>
       <div class="player-stats">
+        <div class="player-stat-badge"><span>1PT</span>${p.pt1 || 0}</div>
+        <div class="player-stat-badge"><span>2PT</span>${p.pt2 || 0}</div>
+        <div class="player-stat-badge"><span>3PT</span>${p.pt3 || 0}</div>
         <div class="player-pts">${pts}</div>
-        ${fouls > 0 ? `<div class="player-fouls">${fouls}</div>` : ''}
+        <div class="player-fouls ${fouls >= 5 ? 'danger' : ''}">${fouls}</div>
       </div>
     `;
     playersList.appendChild(row);
   });
 
-  // Mostra la view principale
   document.getElementById('noDataView').style.display = 'none';
   document.getElementById('mainView').style.display = 'block';
 }
 
-// Gestisci errori di connessione
 window.addEventListener('offline', () => updateFirebaseStatus(false));
 window.addEventListener('online', () => updateFirebaseStatus(true));
 
 console.log("Script Firebase partita.html completato");
 </script>
-
 </body>
 </html>
