@@ -113,12 +113,16 @@
     margin: 0 10px;
   }
 
-  .quarter-info {
-    background: rgba(255, 107, 0, 0.15);
+  /* ─── QUARTI E STORICO ─── */
+  .match-status-wrapper {
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     padding: 15px;
+    border: 1px solid rgba(255, 107, 0, 0.3);
+  }
+
+  .quarter-info {
     text-align: center;
-    border: 2px solid var(--orange);
   }
 
   .quarter-label {
@@ -128,15 +132,52 @@
     letter-spacing: 2px;
     color: var(--text-dim);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
 
   .quarter-number {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 900;
     color: var(--orange);
+    line-height: 1;
   }
+
+  .quarter-history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  }
+
+  .q-hist-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-align: center;
+  }
+
+  .q-hist-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+
+  .q-hist-scores {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  .q-hist-scores .h { color: var(--orange); }
+  .q-hist-scores .a { color: #64b5f6; }
+  .q-hist-scores .sep { color: var(--text-dim); margin: 0 3px; font-weight: 400;}
 
   /* ─── LAST SCORER ─── */
   .last-scorer-section {
@@ -413,9 +454,13 @@ console.log("Pagina partita.html caricata");
         </div>
       </div>
 
-      <div class="quarter-info">
-        <div class="quarter-label">Quarto</div>
-        <div class="quarter-number" id="quarterNumber">1</div>
+      <div class="match-status-wrapper">
+        <div class="quarter-info">
+          <div class="quarter-label">Quarto Attuale</div>
+          <div class="quarter-number" id="quarterNumber">1</div>
+        </div>
+        
+        <div class="quarter-history" id="quarterHistoryContainer" style="display: none;"></div>
       </div>
     </div>
 
@@ -440,7 +485,8 @@ console.log("Pagina partita.html caricata");
         <div class="stat-value fouls" id="homeFouls">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Falli">AVV</div>
+        <div class="stat-label">Falli</div>
+        <div class="stat-value fouls">AVV</div>
       </div>
     </div>
 
@@ -481,14 +527,11 @@ console.log("Inizio ascolto Firestore...");
 const unsubscribe = onSnapshot(
   docRef,
   (docSnap) => {
-    console.log("Snapshot ricevuto", docSnap.exists());
     if (docSnap.exists()) {
       const data = docSnap.data();
-      console.log("Dati Firestore:", data);
       updateUI(data);
       updateFirebaseStatus(true);
     } else {
-      console.log("Documento non esiste");
       document.getElementById('noDataView').style.display = 'block';
       document.getElementById('mainView').style.display = 'none';
     }
@@ -515,6 +558,7 @@ function updateUI(data) {
     homeScore = 0,
     awayScore = 0,
     quarter = 1,
+    quarterHistory = [],
     players = [],
     lastScorerAction = null
   } = data;
@@ -537,6 +581,27 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
+  // --- RENDERING STORICO QUARTI ---
+  const qHistoryContainer = document.getElementById('quarterHistoryContainer');
+  if (quarterHistory && quarterHistory.length > 0) {
+    qHistoryContainer.innerHTML = '';
+    qHistoryContainer.style.display = 'flex'; // Mostra il contenitore
+    
+    quarterHistory.forEach(q => {
+      const box = document.createElement('div');
+      box.className = 'q-hist-box';
+      box.innerHTML = `
+        <div class="q-hist-label">Q${q.q}</div>
+        <div class="q-hist-scores">
+          <span class="h">${q.home}</span><span class="sep">-</span><span class="a">${q.away}</span>
+        </div>
+      `;
+      qHistoryContainer.appendChild(box);
+    });
+  } else {
+    qHistoryContainer.style.display = 'none'; // Nasconde se non ci sono ancora quarti conclusi
+  }
+
   let totalHomeFouls = 0;
   let activePlayersCount = 0;
   const activePlayers_list = [];
@@ -552,7 +617,7 @@ function updateUI(data) {
   document.getElementById('activePlayers').textContent = activePlayersCount;
   document.getElementById('homeFouls').textContent = totalHomeFouls;
 
-  // Gestione dinamica dell'ultimo marcatore con il tipo di tiro (1, 2 o 3 punti)
+  // Gestione dinamica dell'ultimo marcatore
   if (lastScorerAction && lastScorerAction.name) {
     document.getElementById('lastScorerSection').style.display = 'block';
     document.getElementById('lastScorerName').textContent = lastScorerAction.name;
@@ -562,7 +627,7 @@ function updateUI(data) {
     document.getElementById('lastScorerSection').style.display = 'none';
   }
 
-  // Generazione della lista dei soli giocatori presenti con tutte le statistiche
+  // Generazione della lista dei giocatori
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
 
@@ -591,8 +656,6 @@ function updateUI(data) {
 
 window.addEventListener('offline', () => updateFirebaseStatus(false));
 window.addEventListener('online', () => updateFirebaseStatus(true));
-
-console.log("Script Firebase partita.html completato");
 </script>
 </body>
 </html>
