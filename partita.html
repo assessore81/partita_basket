@@ -86,18 +86,16 @@
 
   .team.home .score-big {
     color: var(--orange);
-    animation: scoreUpdate 0.5s ease-out;
   }
 
   .team.away .score-big {
     color: #64b5f6;
-    animation: scoreUpdate 0.5s ease-out;
   }
 
   @keyframes scoreUpdate {
     0% {
-      transform: scale(1.1);
-      text-shadow: 0 0 20px rgba(255, 107, 0, 0.8);
+      transform: scale(1.15);
+      text-shadow: 0 0 20px rgba(255, 107, 0, 0.6);
     }
     100% {
       transform: scale(1);
@@ -189,7 +187,6 @@
     transition: all 0.3s ease;
   }
 
-  /* Varianti di colore dinamiche per Casa e Ospiti */
   .last-scorer-section.home-scorer {
     border-left-color: var(--orange);
   }
@@ -202,14 +199,14 @@
     color: #64b5f6;
   }
 
-  /* Animazioni Flash */
+  /* Animazioni Flash sui Canestri */
   @keyframes flashUpdateHome {
-    0% { background-color: rgba(255, 107, 0, 0.4); box-shadow: 0 0 25px rgba(255, 107, 0, 0.4); }
+    0% { background-color: rgba(255, 107, 0, 0.35); box-shadow: 0 0 25px rgba(255, 107, 0, 0.3); }
     100% { background-color: var(--surface); box-shadow: none; }
   }
 
   @keyframes flashUpdateAway {
-    0% { background-color: rgba(100, 181, 246, 0.4); box-shadow: 0 0 25px rgba(100, 181, 246, 0.4); }
+    0% { background-color: rgba(100, 181, 246, 0.35); box-shadow: 0 0 25px rgba(100, 181, 246, 0.3); }
     100% { background-color: var(--surface); box-shadow: none; }
   }
 
@@ -276,7 +273,7 @@
     letter-spacing: 1px;
     color: var(--text-dim);
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .stat-value {
@@ -284,6 +281,7 @@
     font-size: 36px;
     font-weight: 900;
     color: var(--orange);
+    line-height: 1;
   }
 
   /* ─── PLAYERS ON COURT ─── */
@@ -447,10 +445,6 @@
 </style>
 </head>
 <body>
-
-<script>
-console.log("Pagina partita.html caricata");
-</script>
   
 <div class="firebase-status" id="firebaseStatus"></div>
 
@@ -509,8 +503,6 @@ console.log("Pagina partita.html caricata");
 </div>
 
 <script type="module">
-console.log("Inizio caricamento Firebase");
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -527,17 +519,28 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const docRef = doc(db, "matches", "current");
-let lastHomeScore = 0;
 
-// Variabile di controllo per l'animazione dell'ultimo marcatore
-let lastScorerTimestamp = null;
+// Variabili globali per monitorare le variazioni in tempo reale (Delta tracking)
+let lastHomeScore = null;
+let lastAwayScore = null;
+let prevPlayers = [];
 
-const unsubscribe = onSnapshot(
+onSnapshot(
   docRef,
   (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data();
-      updateUI(data);
+      
+      // Capisce se è la prima volta che si apre o si ricarica la pagina
+      const isFirstLoad = (lastHomeScore === null && lastAwayScore === null);
+      
+      updateUI(data, isFirstLoad);
+      
+      // Aggiorna lo storico locale per il prossimo confronto di punteggio
+      lastHomeScore = data.homeScore || 0;
+      lastAwayScore = data.awayScore || 0;
+      prevPlayers = JSON.parse(JSON.stringify(data.players || []));
+      
       updateFirebaseStatus(true);
     } else {
       document.getElementById('noDataView').style.display = 'block';
@@ -559,7 +562,7 @@ function updateFirebaseStatus(online) {
   }
 }
 
-function updateUI(data) {
+function updateUI(data, isFirstLoad) {
   const {
     homeTeam = 'PONTE',
     awayTeam = 'AVV',
@@ -574,13 +577,13 @@ function updateUI(data) {
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
   
+  // Animazione sul cambio di punteggio principale Casa
   const homeScoreEl = document.getElementById('homeScore');
-  if (homeScore !== lastHomeScore) {
+  if (lastHomeScore !== null && homeScore !== lastHomeScore) {
     homeScoreEl.style.animation = 'none';
     setTimeout(() => {
       homeScoreEl.style.animation = 'scoreUpdate 0.5s ease-out';
       homeScoreEl.textContent = homeScore;
-      lastHomeScore = homeScore;
     }, 10);
   } else {
     homeScoreEl.textContent = homeScore;
@@ -609,56 +612,86 @@ function updateUI(data) {
     qHistoryContainer.style.display = 'none';
   }
 
-  // Conteggio totale convocati (tutti i giocatori caricati a sistema)
-  document.getElementById('activePlayers').textContent = players.length;
+  // CORREZIONE BUG 1: Mostra SOLO i presenti effettivi (giocatori attivi)
+  const activePlayers_list = players.filter(p => p.active);
+  document.getElementById('activePlayers').textContent = activePlayers_list.length;
 
-  // --- GESTIONE DINAMICA ULTIMO MARCATORE ED EFFETTI LAMPEGGIANTI ---
+  // CORREZIONE BUG 2: Logica intelligente e infallibile per l'Ultimo Marcatore
   const scorerSection = document.getElementById('lastScorerSection');
-  
-  if (lastScorerAction && lastScorerAction.timestamp) {
-    scorerSection.style.display = 'block';
-    
-    // Controlla se è una nuova azione per far scattare l'animazione flash
-    const isNewAction = lastScorerAction.timestamp !== lastScorerTimestamp;
-    
-    if (isNewAction) {
-      lastScorerTimestamp = lastScorerAction.timestamp;
-      // Resetta l'animazione precedente
-      scorerSection.style.animation = 'none';
-    }
+  let currentAction = null;
+  let triggerFlash = false;
 
-    if (lastScorerAction.team === 'away' || lastScorerAction.isAway) {
-      // Configurazione per Canestro AVVERSARIO
+  // Opzione A: Se il database ha memorizzato l'azione nel campo dedicatato, usalo
+  if (lastScorerAction && (lastScorerAction.name || lastScorerAction.team)) {
+    currentAction = lastScorerAction;
+    if (!isFirstLoad && (homeScore !== lastHomeScore || awayScore !== lastAwayScore)) {
+      triggerFlash = true;
+    }
+  } 
+  // Opzione B (Infallibile/Live Delta): Se il campo nel DB non c'è, calcola il canestro in tempo reale
+  else if (!isFirstLoad) {
+    if (homeScore > lastHomeScore) {
+      const pointsDiff = homeScore - lastHomeScore;
+      let scorerName = "Giocatore Casa";
+      
+      // Scopre chi ha segnato confrontando i punti individuali vecchi e nuovi
+      if (prevPlayers && prevPlayers.length > 0) {
+        for (let p of players) {
+          const oldP = prevPlayers.find(op => op.name === p.name);
+          if (oldP) {
+            const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+            const oldPts = (oldP.pt1 || 0) + (oldP.pt2 || 0) * 2 + (oldP.pt3 || 0) * 3;
+            if (currentPts > oldPts) {
+              scorerName = p.name;
+              break;
+            }
+          }
+        }
+      }
+      currentAction = { team: 'home', name: scorerName, type: pointsDiff };
+      triggerFlash = true;
+    } else if (awayScore > lastAwayScore) {
+      currentAction = { team: 'away', name: awayTeam || "Avversario", type: (awayScore - lastAwayScore) };
+      triggerFlash = true;
+    }
+  }
+
+  // Stampiamo graficamente la notifica se è stata rilevata o calcolata un'azione
+  if (currentAction) {
+    scorerSection.style.display = 'block';
+    if (triggerFlash) scorerSection.style.animation = 'none';
+
+    if (currentAction.team === 'away' || currentAction.isAway) {
+      // Configurazione Grafica: CANESTRO SUBITO (AVVERSARI)
       scorerSection.className = "last-scorer-section away-scorer";
       document.getElementById('lastScorerLabel').textContent = "⚠️ Canestro subito";
-      document.getElementById('lastScorerName').textContent = awayTeam || "Avversario";
-      document.getElementById('lastScorerPoints').textContent = `+${lastScorerAction.type || 2}`;
-      document.getElementById('lastScorerType').textContent = `Tiro da ${lastScorerAction.type || 2}`;
+      document.getElementById('lastScorerName').textContent = currentAction.name || awayTeam || "Avversario";
+      document.getElementById('lastScorerPoints').textContent = `+${currentAction.type || 2}`;
+      document.getElementById('lastScorerType').textContent = `Tiro da ${currentAction.type || 2}`;
       
-      if (isNewAction) {
+      if (triggerFlash) {
         setTimeout(() => { scorerSection.style.animation = 'flashUpdateAway 0.8s ease-out'; }, 10);
       }
     } else {
-      // Configurazione per Canestro CASA (Ponte di Nona)
+      // Configurazione Grafica: ULTIMO MARCATORE PONTE
       scorerSection.className = "last-scorer-section home-scorer";
       document.getElementById('lastScorerLabel').textContent = "⭐ Ultimo marcatore";
-      document.getElementById('lastScorerName').textContent = lastScorerAction.name || "-";
-      document.getElementById('lastScorerPoints').textContent = `+${lastScorerAction.type || 2}`;
-      document.getElementById('lastScorerType').textContent = `Tiro da ${lastScorerAction.type || 2}`;
+      document.getElementById('lastScorerName').textContent = currentAction.name || "-";
+      document.getElementById('lastScorerPoints').textContent = `+${currentAction.type || 2}`;
+      document.getElementById('lastScorerType').textContent = `Tiro da ${currentAction.type || 2}`;
       
-      if (isNewAction) {
+      if (triggerFlash) {
         setTimeout(() => { scorerSection.style.animation = 'flashUpdateHome 0.8s ease-out'; }, 10);
       }
     }
   } else {
+    // Al caricamento iniziale, se non c'è traccia nel database, la notifica resta nascosta fino al prossimo canestro
     scorerSection.style.display = 'none';
   }
 
-  // Generazione Lista Giocatori Attivi (In Campo)
+  // Generazione dinamica della lista dei giocatori attivi sul rettangolo di gioco
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
-
-  const activePlayers_list = players.filter(p => p.active);
 
   activePlayers_list.forEach((p) => {
     const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
