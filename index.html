@@ -969,36 +969,27 @@ window.firebaseReady = true;
 
 async function saveToFirebase() {
   try {
-    let calculatedHomeScore = 0;
-    if (typeof players !== 'undefined' && Array.isArray(players)) {
-      players.forEach(p => {
-        if (p.active) {
-          calculatedHomeScore += (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
-        }
-      });
-    }
-
+    // Usiamo 'homeScoreNum' per evitare conflitti con l'omonimo ID dell'elemento HTML
+    const homeScoreNum = parseInt(document.getElementById('homeScore').textContent) || 0;
     const homeName = document.getElementById('homeName').value || 'PONTE DI NONA';
     const awayName = document.getElementById('awayName').value || 'AVVERSARIO';
-    const currentAction = window.lastScorerAction || null;
     
     const docRef = doc(db, "matches", "current");
     await setDoc(docRef, {
-  homeTeam: homeName,
-  awayTeam: awayName,
-  homeScore: homeScore,
-  awayScore: awayScore || 0,
-  quarter: quarter || 1,
-  players: players || [],
-  quarterHistory: quarterHistory || [],
-  quarterStartHome: quarterStartHome || 0,
-  quarterStartAway: quarterStartAway || 0,
-  lastAction: window.lastAction || null, // <-- Aggiunto
-  updatedAt: new Date()
-}, { merge: true });
+      homeTeam: homeName,
+      awayTeam: awayName,
+      homeScore: homeScoreNum, // Passiamo il valore numerico sicuro
+      awayScore: awayScore || 0,
+      quarter: quarter || 1,
+      players: players || [],
+      quarterHistory: quarterHistory || [],
+      quarterStartHome: quarterStartHome || 0,
+      quarterStartAway: quarterStartAway || 0,
+      updatedAt: new Date()
+    }, { merge: true });
     
     document.getElementById('firebaseStatus').classList.remove('offline');
-    console.log('Salvato su Firestore con punteggio:', calculatedHomeScore);
+    console.log('Salvato su Firestore');
   } catch (e) {
     console.error('Errore Firestore:', e);
     document.getElementById('firebaseStatus').classList.add('offline');
