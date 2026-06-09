@@ -428,8 +428,12 @@ console.log("Pagina partita.html caricata");
 
 <!-- Firebase SDK -->
 <script type="module">
+console.log("Inizio caricamento Firebase");
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+console.log("Firebase SDK importato");
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtkWH5ekxU7YK-LvXLR0hhb-cyrFmxc34",
@@ -443,24 +447,31 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+console.log("Firebase inizializzato");
+
 // Ascolta i cambiamenti del documento "current" in tempo reale
 const docRef = doc(db, "matches", "current");
 let lastHomeScore = 0;
 
+console.log("Inizio ascolto Firestore...");
+
 const unsubscribe = onSnapshot(
   docRef,
   (docSnap) => {
+    console.log("Snapshot ricevuto", docSnap.exists());
     if (docSnap.exists()) {
       const data = docSnap.data();
+      console.log("Dati Firestore:", data);
       updateUI(data);
       updateFirebaseStatus(true);
     } else {
+      console.log("Documento non esiste");
       document.getElementById('noDataView').style.display = 'block';
       document.getElementById('mainView').style.display = 'none';
     }
   },
   (error) => {
-    console.warn('Errore Firestore:', error);
+    console.error('Errore Firestore:', error);
     updateFirebaseStatus(false);
   }
 );
@@ -530,7 +541,7 @@ function updateUI(data) {
   // Update stats
   document.getElementById('activePlayers').textContent = activePlayers;
   document.getElementById('homeFouls').textContent = totalHomeFouls;
-  document.getElementById('awayFouls').textContent = 0; // Avversario non ha dati dettagliati
+  document.getElementById('awayFouls').textContent = 0;
 
   // Update last scorer
   if (lastScorer) {
@@ -567,6 +578,8 @@ function updateUI(data) {
 // Gestisci errori di connessione
 window.addEventListener('offline', () => updateFirebaseStatus(false));
 window.addEventListener('online', () => updateFirebaseStatus(true));
+
+console.log("Script Firebase partita.html completato");
 </script>
 
 </body>
