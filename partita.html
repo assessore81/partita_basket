@@ -264,7 +264,6 @@
     align-items: center;
   }
 
-  /* DETTAGLIO PUNTI RESTAURATO */
   .player-breakdown {
     display: flex;
     gap: 4px;
@@ -296,9 +295,8 @@
     justify-content: center;
   }
 
+  /* STILI APPLICATI E OTTIMIZZATI PER I FALLI SINGOLI */
   .player-fouls {
-    background: rgba(239, 83, 80, 0.2);
-    color: var(--foul-red);
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 15px;
     font-weight: 700;
@@ -308,6 +306,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .player-fouls.f-zero {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+  }
+
+  .player-fouls.f-active {
+    background: rgba(239, 83, 80, 0.2);
+    color: var(--foul-red);
+  }
+
+  .player-fouls.f-danger {
+    background: var(--foul-red);
+    color: white;
   }
 
   /* ─── NO DATA ─── */
@@ -454,7 +468,7 @@ console.log("Firebase inizializzato");
 
 const docRef = doc(db, "matches", "current");
 
-// Variabili globali di stato per intercettare i canestri in tempo reale (NON TOCCATE)
+// Variabili globali di stato per intercettare i canestri in tempo reale
 let lastHomeScore = 0;
 let prevHomeScore = null;
 let prevAwayScore = null;
@@ -471,7 +485,7 @@ const unsubscribe = onSnapshot(
       const data = docSnap.data();
       console.log("Dati Firestore:", data);
       
-      // Analizza le variazioni per calcolare la notifica canestro (NON TOCCATA)
+      // Analizza le variazioni per calcolare la notifica canestro
       detectChanges(data);
       
       updateUI(data);
@@ -497,7 +511,6 @@ function updateFirebaseStatus(online) {
   }
 }
 
-// LOGICA RILEVAMENTO NOTIFICHE (PRESERVATA AL 100%)
 function detectChanges(data) {
   const homeScore = data.homeScore || 0;
   const awayScore = data.awayScore || 0;
@@ -592,7 +605,7 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
-  // ─── RENDERING STORICO QUARTI RESTAURATO ───
+  // Rendering Storico Quarti
   const qContainer = document.getElementById('quartersHistoryContainer');
   qContainer.innerHTML = '';
   if (quarterHistory && quarterHistory.length > 0) {
@@ -622,7 +635,7 @@ function updateUI(data) {
     }
   });
 
-  // ─── RENDERING NOTIFICA DI CANESTRO IN REAL-TIME (NON TOCCATA) ───
+  // Rendering Notifica di canestro in real-time
   const lastScorerSection = document.getElementById('lastScorerSection');
   const pointsEl = document.getElementById('lastScorerPoints');
   const labelEl = document.getElementById('lastScorerLabel');
@@ -664,13 +677,16 @@ function updateUI(data) {
     }
   }
 
-  // Genera la lista dei Convocati con DETTAGLIO PUNTI RIPRISTINATO
+  // Genera la lista dei Convocati con dettaglio punti e FALLI SINGOLI AGGIUNTI
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
 
   activePlayers_list.forEach((p) => {
     const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
     const fouls = p.fouls || 0;
+
+    // Assegna la classe colore corretta in base al numero di falli commessi
+    const foulClass = fouls >= 4 ? 'f-danger' : (fouls > 0 ? 'f-active' : 'f-zero');
 
     const row = document.createElement('div');
     row.className = 'player-row';
@@ -683,7 +699,7 @@ function updateUI(data) {
           <span class="pt-pill">3p: ${p.pt3 || 0}</span>
         </div>
         <div class="player-pts">${pts}</div>
-        ${fouls > 0 ? `<div class="player-fouls">${fouls}</div>` : ''}
+        <div class="player-fouls ${foulClass}">${fouls}</div>
       </div>
     `;
     playersList.appendChild(row);
