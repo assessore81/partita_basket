@@ -226,6 +226,7 @@
     border-radius: 15px;
     padding: 20px;
     border-top: 3px solid var(--orange);
+    margin-bottom: 20px;
   }
 
   .section-title {
@@ -235,7 +236,17 @@
     letter-spacing: 1px;
     text-transform: uppercase;
     color: var(--orange);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .section-title.bench {
+    color: var(--text-dim);
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 15px;
   }
 
   .player-row {
@@ -246,7 +257,6 @@
     background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
     margin-bottom: 8px;
-    border-left: 3px solid var(--orange);
   }
 
   .player-name {
@@ -295,7 +305,6 @@
     justify-content: center;
   }
 
-  /* STILI APPLICATI E OTTIMIZZATI PER I FALLI SINGOLI */
   .player-fouls {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 15px;
@@ -322,6 +331,13 @@
   .player-fouls.f-danger {
     background: var(--foul-red);
     color: white;
+  }
+
+  .empty-list-msg {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-style: italic;
+    padding: 10px 5px;
   }
 
   /* ─── NO DATA ─── */
@@ -395,10 +411,6 @@
 </style>
 </head>
 <body>
-
-<script>
-console.log("Pagina partita.html caricata");
-</script>
   
 <div class="firebase-status" id="firebaseStatus"></div>
 
@@ -438,19 +450,18 @@ console.log("Pagina partita.html caricata");
     </div>
 
     <div class="players-section">
-      <div class="section-title">👥 Convocati</div>
-      <div id="playersList"></div>
+      <div class="section-title">🏀 In Campo</div>
+      <div id="playersOnCourt"></div>
+      
+      <div class="section-title bench">🛋️ A Disposizione</div>
+      <div id="playersOnBench"></div>
     </div>
   </div>
 </div>
 
 <script type="module">
-console.log("Inizio caricamento Firebase");
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-console.log("Firebase SDK importato");
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtkWH5ekxU7YK-LvXLR0hhb-cyrFmxc34",
@@ -464,34 +475,23 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-console.log("Firebase inizializzato");
-
 const docRef = doc(db, "matches", "current");
 
-// Variabili globali di stato per intercettare i canestri in tempo reale
 let lastHomeScore = 0;
 let prevHomeScore = null;
 let prevAwayScore = null;
 let prevPlayersState = null;
 let currentNotification = JSON.parse(localStorage.getItem('live_last_notification') || 'null');
 
-console.log("Inizio ascolto Firestore...");
-
 const unsubscribe = onSnapshot(
   docRef,
   (docSnap) => {
-    console.log("Snapshot ricevuto", docSnap.exists());
     if (docSnap.exists()) {
       const data = docSnap.data();
-      console.log("Dati Firestore:", data);
-      
-      // Analizza le variazioni per calcolare la notifica canestro
       detectChanges(data);
-      
       updateUI(data);
       updateFirebaseStatus(true);
     } else {
-      console.log("Documento non esiste");
       document.getElementById('noDataView').style.display = 'block';
       document.getElementById('mainView').style.display = 'none';
     }
@@ -544,20 +544,12 @@ function detectChanges(data) {
       }
     }
 
-    currentNotification = {
-      team: 'home',
-      name: scorerName,
-      text: pointText
-    };
+    currentNotification = { team: 'home', name: scorerName, text: pointText };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
   }
   else if (awayScore > prevAwayScore) {
     const delta = awayScore - prevAwayScore;
-    currentNotification = {
-      team: 'away',
-      name: awayTeam,
-      text: '+' + delta
-    };
+    currentNotification = { team: 'away', name: awayTeam, text: '+' + delta };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
   }
   else if (homeScore < prevHomeScore || awayScore < prevAwayScore) {
@@ -585,11 +577,9 @@ function updateUI(data) {
     players = []
   } = data;
 
-  // Aggiorna nomi squadre
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
   
-  // Animazione del punteggio di casa
   const homeScoreEl = document.getElementById('homeScore');
   if (homeScore !== lastHomeScore) {
     homeScoreEl.style.animation = 'none';
@@ -605,7 +595,6 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
-  // Rendering Storico Quarti
   const qContainer = document.getElementById('quartersHistoryContainer');
   qContainer.innerHTML = '';
   if (quarterHistory && quarterHistory.length > 0) {
@@ -627,15 +616,6 @@ function updateUI(data) {
     qContainer.style.display = 'none';
   }
 
-  // Elabora i convocati attivi
-  const activePlayers_list = [];
-  players.forEach((p) => {
-    if (p.active) {
-      activePlayers_list.push(p);
-    }
-  });
-
-  // Rendering Notifica di canestro in real-time
   const lastScorerSection = document.getElementById('lastScorerSection');
   const pointsEl = document.getElementById('lastScorerPoints');
   const labelEl = document.getElementById('lastScorerLabel');
@@ -677,19 +657,32 @@ function updateUI(data) {
     }
   }
 
-  // Genera la lista dei Convocati con dettaglio punti e FALLI SINGOLI AGGIUNTI
-  const playersList = document.getElementById('playersList');
-  playersList.innerHTML = '';
+  // ELEMENTI DELLE DUE LISTE SEPARATE
+  const courtContainer = document.getElementById('playersOnCourt');
+  const benchContainer = document.getElementById('playersOnBench');
+  courtContainer.innerHTML = '';
+  benchContainer.innerHTML = '';
 
-  activePlayers_list.forEach((p) => {
+  let countCourt = 0;
+  let countBench = 0;
+
+  players.forEach((p) => {
+    if (!p.active) return; // Mostra solo i convocati presenti
+
     const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
     const fouls = p.fouls || 0;
-
-    // Assegna la classe colore corretta in base al numero di falli commessi
     const foulClass = fouls >= 4 ? 'f-danger' : (fouls > 0 ? 'f-active' : 'f-zero');
 
     const row = document.createElement('div');
     row.className = 'player-row';
+    
+    // Stile del bordo sinistro differenziato per stato di gioco
+    if (p.onCourt) {
+      row.style.borderLeft = '3px solid var(--green)';
+    } else {
+      row.style.borderLeft = '3px solid var(--text-dim)';
+    }
+
     row.innerHTML = `
       <div class="player-name">${p.name}</div>
       <div class="player-stats">
@@ -702,20 +695,30 @@ function updateUI(data) {
         <div class="player-fouls ${foulClass}">${fouls}</div>
       </div>
     `;
-    playersList.appendChild(row);
+
+    if (p.onCourt) {
+      courtContainer.appendChild(row);
+      countCourt++;
+    } else {
+      benchContainer.appendChild(row);
+      countBench++;
+    }
   });
 
-  // Mostra la view principale
+  // Gestione messaggi vuoti di cortesia
+  if (countCourt === 0) {
+    courtContainer.innerHTML = '<div class="empty-list-msg">Nessun giocatore attualmente in campo</div>';
+  }
+  if (countBench === 0) {
+    benchContainer.innerHTML = '<div class="empty-list-msg">Tutti i convocati sono in campo</div>';
+  }
+
   document.getElementById('noDataView').style.display = 'none';
   document.getElementById('mainView').style.display = 'block';
 }
 
-// Gestisci errori di connessione internet
 window.addEventListener('offline', () => updateFirebaseStatus(false));
 window.addEventListener('online', () => updateFirebaseStatus(true));
-
-console.log("Script Firebase partita.html completato");
 </script>
-
 </body>
 </html>
