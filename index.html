@@ -1040,19 +1040,26 @@ window.saveToFirebase = async function() {
     const homeName = document.getElementById('homeName').value || 'PONTE DI NONA';
     const awayName = document.getElementById('awayName').value || 'AVVERSARIO';
     
-    const docRef = doc(db, "matches", "current");
-    await setDoc(docRef, {
+    const docRef = window.doc(window.db, "matches", "current");
+    await window.setDoc(docRef, {
       homeTeam: homeName,
       awayTeam: awayName,
-      homeScore: homeScore,
-      awayScore: window.awayScore,
-      quarter: window.quarter,
-      players: window.players,
-      quarterHistory: window.quarterHistory,
-      quarterStartHome: window.quarterStartHome,
-      quarterStartAway: window.quarterStartAway,
+      homeScore: parseInt(homeScore) || 0,
+      awayScore: parseInt(window.awayScore) || 0,
+      quarter: parseInt(window.quarter) || 1,
+      players: window.players || [],
+      quarterHistory: window.quarterHistory || [],
+      quarterStartHome: parseInt(window.quarterStartHome) || 0,
+      quarterStartAway: parseInt(window.quarterStartAway) || 0,
       updatedAt: new Date()
     }, { merge: true });
+    
+    window.updateFirebaseStatus(true);
+  } catch (e) {
+    console.warn('Errore salvataggio Firestore', e);
+    window.updateFirebaseStatus(false);
+  }
+};
     
     updateFirebaseStatus(true);
   } catch (e) {
