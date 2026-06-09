@@ -143,6 +143,43 @@
     color: var(--orange);
   }
 
+  /* ─── STORICO QUARTI ─── */
+  .quarters-history {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+
+  .q-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-align: center;
+    min-width: 60px;
+  }
+
+  .q-box-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .q-box-row {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .q-box-h { color: var(--orange); }
+  .q-box-sep { color: var(--text-dim); margin: 0 2px; }
+  .q-box-a { color: #64b5f6; }
+
   /* ─── LAST SCORER ─── */
   .last-scorer-section {
     background: var(--surface);
@@ -218,22 +255,41 @@
     font-weight: 600;
     color: var(--text);
     flex: 1;
+    padding-right: 10px;
   }
 
   .player-stats {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
+  }
+
+  /* DETTAGLIO PUNTI RESTAURATO */
+  .player-breakdown {
+    display: flex;
+    gap: 4px;
+  }
+
+  .pt-pill {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
   }
 
   .player-pts {
     background: var(--orange);
     color: white;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 900;
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -244,10 +300,10 @@
     background: rgba(239, 83, 80, 0.2);
     color: var(--foul-red);
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -316,6 +372,11 @@
     .separator {
       font-size: 45px;
     }
+
+    .pt-pill {
+      font-size: 10px;
+      padding: 1px 3px;
+    }
   }
 </style>
 </head>
@@ -350,6 +411,8 @@ console.log("Pagina partita.html caricata");
         <div class="quarter-label">Quarto</div>
         <div class="quarter-number" id="quarterNumber">1</div>
       </div>
+
+      <div class="quarters-history" id="quartersHistoryContainer" style="display: none;"></div>
     </div>
 
     <div class="last-scorer-section" id="lastScorerSection" style="display: none;">
@@ -391,7 +454,7 @@ console.log("Firebase inizializzato");
 
 const docRef = doc(db, "matches", "current");
 
-// Variabili globali di stato per intercettare i canestri in tempo reale
+// Variabili globali di stato per intercettare i canestri in tempo reale (NON TOCCATE)
 let lastHomeScore = 0;
 let prevHomeScore = null;
 let prevAwayScore = null;
@@ -408,7 +471,7 @@ const unsubscribe = onSnapshot(
       const data = docSnap.data();
       console.log("Dati Firestore:", data);
       
-      // Analizza le variazioni per calcolare la notifica canestro
+      // Analizza le variazioni per calcolare la notifica canestro (NON TOCCATA)
       detectChanges(data);
       
       updateUI(data);
@@ -434,6 +497,7 @@ function updateFirebaseStatus(online) {
   }
 }
 
+// LOGICA RILEVAMENTO NOTIFICHE (PRESERVATA AL 100%)
 function detectChanges(data) {
   const homeScore = data.homeScore || 0;
   const awayScore = data.awayScore || 0;
@@ -441,7 +505,6 @@ function detectChanges(data) {
   const awayTeam = data.awayTeam || 'AVV';
   const players = data.players || [];
 
-  // Al primo avvio della pagina salviamo lo stato iniziale senza generare false notifiche
   if (prevHomeScore === null || prevAwayScore === null || prevPlayersState === null) {
     prevHomeScore = homeScore;
     prevAwayScore = awayScore;
@@ -453,13 +516,11 @@ function detectChanges(data) {
     return;
   }
 
-  // Rilevamento canestro Squadra In Casa
   if (homeScore > prevHomeScore) {
     const delta = homeScore - prevHomeScore;
     let scorerName = homeTeam;
     let pointText = '+' + delta;
 
-    // Cerca quale giocatore specifico ha aumentato i suoi punti
     for (let p of players) {
       const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
       const prevPts = prevPlayersState[p.name] || 0;
@@ -477,7 +538,6 @@ function detectChanges(data) {
     };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
   }
-  // Rilevamento canestro Squadra Ospite
   else if (awayScore > prevAwayScore) {
     const delta = awayScore - prevAwayScore;
     currentNotification = {
@@ -487,13 +547,11 @@ function detectChanges(data) {
     };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
   }
-  // Se la partita viene azzerata o i punteggi calano (Reset)
   else if (homeScore < prevHomeScore || awayScore < prevAwayScore) {
     currentNotification = null;
     localStorage.removeItem('live_last_notification');
   }
 
-  // Memorizza i dati attuali come base di confronto per il prossimo snapshot
   prevHomeScore = homeScore;
   prevAwayScore = awayScore;
   prevPlayersState = {};
@@ -510,6 +568,7 @@ function updateUI(data) {
     homeScore = 0,
     awayScore = 0,
     quarter = 1,
+    quarterHistory = [],
     players = []
   } = data;
 
@@ -533,6 +592,28 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
+  // ─── RENDERING STORICO QUARTI RESTAURATO ───
+  const qContainer = document.getElementById('quartersHistoryContainer');
+  qContainer.innerHTML = '';
+  if (quarterHistory && quarterHistory.length > 0) {
+    quarterHistory.forEach((entry) => {
+      const box = document.createElement('div');
+      box.className = 'q-box';
+      box.innerHTML = `
+        <div class="q-box-label">Q${entry.q}</div>
+        <div class="q-box-row">
+          <span class="q-box-h">${entry.home}</span>
+          <span class="q-box-sep">-</span>
+          <span class="q-box-a">${entry.away}</span>
+        </div>
+      `;
+      qContainer.appendChild(box);
+    });
+    qContainer.style.display = 'flex';
+  } else {
+    qContainer.style.display = 'none';
+  }
+
   // Elabora i convocati attivi
   const activePlayers_list = [];
   players.forEach((p) => {
@@ -541,7 +622,7 @@ function updateUI(data) {
     }
   });
 
-  // ─── RENDERING NOTIFICA DI CANESTRO IN REAL-TIME ───
+  // ─── RENDERING NOTIFICA DI CANESTRO IN REAL-TIME (NON TOCCATA) ───
   const lastScorerSection = document.getElementById('lastScorerSection');
   const pointsEl = document.getElementById('lastScorerPoints');
   const labelEl = document.getElementById('lastScorerLabel');
@@ -552,17 +633,15 @@ function updateUI(data) {
     pointsEl.textContent = currentNotification.text;
     
     if (currentNotification.team === 'away') {
-      lastScorerSection.style.borderLeft = '4px solid #64b5f6'; // Blu
+      lastScorerSection.style.borderLeft = '4px solid #64b5f6';
       pointsEl.style.color = '#64b5f6';
       labelEl.textContent = '⚡ Canestro avversario';
     } else {
-      lastScorerSection.style.borderLeft = '4px solid var(--orange)'; // Arancione
+      lastScorerSection.style.borderLeft = '4px solid var(--orange)';
       pointsEl.style.color = 'var(--orange)';
       labelEl.textContent = '⭐ Ultimo marcatore';
     }
   } else {
-    // Fallback: se non c'è una notifica live registrata ma la partita è in corso,
-    // mostra provvisoriamente il miglior marcatore di casa
     let topScorer = null;
     let maxPts = 0;
     players.forEach((p) => {
@@ -585,7 +664,7 @@ function updateUI(data) {
     }
   }
 
-  // Genera la lista dei Convocati
+  // Genera la lista dei Convocati con DETTAGLIO PUNTI RIPRISTINATO
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
 
@@ -598,6 +677,11 @@ function updateUI(data) {
     row.innerHTML = `
       <div class="player-name">${p.name}</div>
       <div class="player-stats">
+        <div class="player-breakdown">
+          <span class="pt-pill">1p: ${p.pt1 || 0}</span>
+          <span class="pt-pill">2p: ${p.pt2 || 0}</span>
+          <span class="pt-pill">3p: ${p.pt3 || 0}</span>
+        </div>
         <div class="player-pts">${pts}</div>
         ${fouls > 0 ? `<div class="player-fouls">${fouls}</div>` : ''}
       </div>
