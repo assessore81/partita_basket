@@ -969,8 +969,12 @@ window.firebaseReady = true;
 
 async function saveToFirebase() {
   try {
-    // Usiamo 'homeScoreNum' per evitare conflitti con l'omonimo ID dell'elemento HTML
-    const homeScoreNum = parseInt(document.getElementById('homeScore').textContent) || 0;
+    // Calcoliamo il punteggio totale in tempo reale direttamente dai dati dei giocatori
+    // Questo evita qualsiasi ritardo o asincronia con il rendering della pagina HTML
+    const homeScoreNum = players.reduce((sum, p) => {
+      return sum + ((p.pt1 || 0) * 1 + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3);
+    }, 0);
+
     const homeName = document.getElementById('homeName').value || 'PONTE DI NONA';
     const awayName = document.getElementById('awayName').value || 'AVVERSARIO';
     
@@ -978,7 +982,7 @@ async function saveToFirebase() {
     await setDoc(docRef, {
       homeTeam: homeName,
       awayTeam: awayName,
-      homeScore: homeScoreNum, // Passiamo il valore numerico sicuro
+      homeScore: homeScoreNum, // Punteggio calcolato istantaneamente
       awayScore: awayScore || 0,
       quarter: quarter || 1,
       players: players || [],
@@ -989,7 +993,7 @@ async function saveToFirebase() {
     }, { merge: true });
     
     document.getElementById('firebaseStatus').classList.remove('offline');
-    console.log('Salvato su Firestore');
+    console.log('Salvato su Firestore con successo');
   } catch (e) {
     console.error('Errore Firestore:', e);
     document.getElementById('firebaseStatus').classList.add('offline');
