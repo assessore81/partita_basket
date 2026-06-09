@@ -984,18 +984,18 @@ async function saveToFirebase() {
     
     const docRef = doc(db, "matches", "current");
     await setDoc(docRef, {
-      homeTeam: homeName,
-      awayTeam: awayName,
-      homeScore: calculatedHomeScore,
-      awayScore: awayScore || 0,
-      quarter: quarter || 1,
-      players: players || [],
-      quarterHistory: quarterHistory || [],
-      quarterStartHome: quarterStartHome || 0,
-      quarterStartAway: quarterStartAway || 0,
-      lastScorerAction: currentAction,
-      updatedAt: new Date()
-    }, { merge: true });
+  homeTeam: homeName,
+  awayTeam: awayName,
+  homeScore: homeScore,
+  awayScore: awayScore || 0,
+  quarter: quarter || 1,
+  players: players || [],
+  quarterHistory: quarterHistory || [],
+  quarterStartHome: quarterStartHome || 0,
+  quarterStartAway: quarterStartAway || 0,
+  lastAction: window.lastAction || null, // <-- Aggiunto
+  updatedAt: new Date()
+}, { merge: true });
     
     document.getElementById('firebaseStatus').classList.remove('offline');
     console.log('Salvato su Firestore con punteggio:', calculatedHomeScore);
@@ -1049,6 +1049,7 @@ function save() {
   localStorage.setItem('bball_qhistory', JSON.stringify(quarterHistory));
   localStorage.setItem('bball_qstart_home', quarterStartHome);
   localStorage.setItem('bball_qstart_away', quarterStartAway);
+  localStorage.setItem('bball_lastaction', JSON.stringify(window.lastAction)); // <-- Aggiunto
   
   if (window.firebaseReady) {
     saveToFirebase();
@@ -1184,16 +1185,17 @@ function addPt(idx, type, delta) {
   if (type === 1) players[idx].pt1 = Math.max(0, players[idx].pt1 + delta);
   if (type === 2) players[idx].pt2 = Math.max(0, players[idx].pt2 + delta);
   if (type === 3) players[idx].pt3 = Math.max(0, players[idx].pt3 + delta);
-
+  
+  // Registra l'azione se sono stati aggiunti punti
   if (delta > 0) {
-    lastScorerAction = {
+    window.lastAction = {
+      team: 'home',
       name: players[idx].name,
-      type: type,
-      time: Date.now()
+      text: '+' + type
     };
-    window.lastScorerAction = lastScorerAction;
-    localStorage.setItem('bball_last_scorer', JSON.stringify(lastScorerAction));
   }
+  
+  save();
 
   document.getElementById(`c1-${idx}`).textContent = players[idx].pt1;
   document.getElementById(`c2-${idx}`).textContent = players[idx].pt2;
@@ -1208,9 +1210,7 @@ function addPt(idx, type, delta) {
 
   updateTotals();
   renderNav();
-  save();
 }
-
 function addFoul(idx, delta) {
   players[idx].fouls = Math.max(0, players[idx].fouls + delta);
   const el = document.getElementById(`f-${idx}`);
@@ -1223,9 +1223,18 @@ function addFoul(idx, delta) {
 
 function addAway(delta) {
   awayScore = Math.max(0, awayScore + delta);
-  document.getElementById('awayScore').textContent = awayScore;
-  updateTotals();
+  
+  // Registra l'azione se sono stati aggiunti punti
+  if (delta > 0) {
+    window.lastAction = {
+      team: 'away',
+      name: document.getElementById('awayName').value || 'AVVERSARIO',
+      text: '+' + delta
+    };
+  }
+  
   save();
+  document.getElementById('awayScore').textContent = awayScore;
 }
 
 function updateTotals() {
@@ -1337,8 +1346,7 @@ function confirmReset() {
     players = DEFAULT_PLAYERS.map(p => ({...p}));
     awayScore = 0; quarter = 1;
     quarterHistory = []; quarterStartHome = 0; quarterStartAway = 0;
-    lastScorerAction = null;
-    window.lastScorerAction = null;
+    window.lastAction = null; // <-- Aggiunto
     localStorage.clear();
     document.getElementById('quarterBadge').textContent = 1;
     closeStats();
