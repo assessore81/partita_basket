@@ -179,13 +179,38 @@
   .q-hist-scores .a { color: #64b5f6; }
   .q-hist-scores .sep { color: var(--text-dim); margin: 0 3px; font-weight: 400;}
 
-  /* ─── LAST SCORER ─── */
+  /* ─── LAST SCORER CON ANIMAZIONE FLASH ─── */
   .last-scorer-section {
     background: var(--surface);
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 20px;
     border-left: 4px solid var(--orange);
+    transition: all 0.3s ease;
+  }
+
+  /* Varianti di colore dinamiche per Casa e Ospiti */
+  .last-scorer-section.home-scorer {
+    border-left-color: var(--orange);
+  }
+
+  .last-scorer-section.away-scorer {
+    border-left-color: #64b5f6;
+  }
+
+  .last-scorer-section.away-scorer .scorer-points {
+    color: #64b5f6;
+  }
+
+  /* Animazioni Flash */
+  @keyframes flashUpdateHome {
+    0% { background-color: rgba(255, 107, 0, 0.4); box-shadow: 0 0 25px rgba(255, 107, 0, 0.4); }
+    100% { background-color: var(--surface); box-shadow: none; }
+  }
+
+  @keyframes flashUpdateAway {
+    0% { background-color: rgba(100, 181, 246, 0.4); box-shadow: 0 0 25px rgba(100, 181, 246, 0.4); }
+    100% { background-color: var(--surface); box-shadow: none; }
   }
 
   .last-scorer-label {
@@ -231,15 +256,12 @@
     font-weight: 600;
   }
 
-  /* ─── STATS GRID ─── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
+  /* ─── STATS CARD SINGOLA ─── */
+  .stats-container-single {
     margin-bottom: 20px;
   }
 
-  .stat-card {
+  .stat-card-full {
     background: var(--surface);
     border-radius: 12px;
     padding: 16px;
@@ -249,22 +271,20 @@
 
   .stat-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--text-dim);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .stat-value {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 900;
-    color: var(--text);
+    color: var(--orange);
   }
-
-  .stat-value.fouls { color: var(--foul-red); }
 
   /* ─── PLAYERS ON COURT ─── */
   .players-section {
@@ -420,7 +440,6 @@
     .scoreboard-main { padding: 20px 15px; }
     .score-big { font-size: 60px; }
     .separator { font-size: 45px; }
-    .stats-grid { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     .player-row { padding: 8px 6px; gap: 4px; }
     .player-name { font-size: 13px; }
     .player-stat-badge { min-width: 28px; padding: 2px; }
@@ -465,7 +484,7 @@ console.log("Pagina partita.html caricata");
     </div>
 
     <div class="last-scorer-section" id="lastScorerSection" style="display: none;">
-      <div class="last-scorer-label">⭐ Ultimo marcatore</div>
+      <div class="last-scorer-label" id="lastScorerLabel">⭐ Ultimo marcatore</div>
       <div class="last-scorer-info">
         <div class="scorer-name" id="lastScorerName">-</div>
         <div class="scorer-points-box">
@@ -475,18 +494,10 @@ console.log("Pagina partita.html caricata");
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">In Campo</div>
+    <div class="stats-container-single">
+      <div class="stat-card-full">
+        <div class="stat-label">Convocati</div>
         <div class="stat-value" id="activePlayers">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Falli CASA</div>
-        <div class="stat-value fouls" id="homeFouls">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Falli</div>
-        <div class="stat-value fouls">AVV</div>
       </div>
     </div>
 
@@ -503,8 +514,6 @@ console.log("Inizio caricamento Firebase");
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-console.log("Firebase SDK importato");
-
 const firebaseConfig = {
   apiKey: "AIzaSyAtkWH5ekxU7YK-LvXLR0hhb-cyrFmxc34",
   authDomain: "basket-scoresheet.firebaseapp.com",
@@ -517,12 +526,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-console.log("Firebase inizializzato");
-
 const docRef = doc(db, "matches", "current");
 let lastHomeScore = 0;
 
-console.log("Inizio ascolto Firestore...");
+// Variabile di controllo per l'animazione dell'ultimo marcatore
+let lastScorerTimestamp = null;
 
 const unsubscribe = onSnapshot(
   docRef,
@@ -581,12 +589,11 @@ function updateUI(data) {
   document.getElementById('awayScore').textContent = awayScore;
   document.getElementById('quarterNumber').textContent = quarter;
 
-  // --- RENDERING STORICO QUARTI ---
+  // Rendering Storico Quarti
   const qHistoryContainer = document.getElementById('quarterHistoryContainer');
   if (quarterHistory && quarterHistory.length > 0) {
     qHistoryContainer.innerHTML = '';
-    qHistoryContainer.style.display = 'flex'; // Mostra il contenitore
-    
+    qHistoryContainer.style.display = 'flex';
     quarterHistory.forEach(q => {
       const box = document.createElement('div');
       box.className = 'q-hist-box';
@@ -599,37 +606,59 @@ function updateUI(data) {
       qHistoryContainer.appendChild(box);
     });
   } else {
-    qHistoryContainer.style.display = 'none'; // Nasconde se non ci sono ancora quarti conclusi
+    qHistoryContainer.style.display = 'none';
   }
 
-  let totalHomeFouls = 0;
-  let activePlayersCount = 0;
-  const activePlayers_list = [];
+  // Conteggio totale convocati (tutti i giocatori caricati a sistema)
+  document.getElementById('activePlayers').textContent = players.length;
 
-  players.forEach((p) => {
-    if (p.active) {
-      activePlayersCount++;
-      totalHomeFouls += p.fouls || 0;
-      activePlayers_list.push(p);
+  // --- GESTIONE DINAMICA ULTIMO MARCATORE ED EFFETTI LAMPEGGIANTI ---
+  const scorerSection = document.getElementById('lastScorerSection');
+  
+  if (lastScorerAction && lastScorerAction.timestamp) {
+    scorerSection.style.display = 'block';
+    
+    // Controlla se è una nuova azione per far scattare l'animazione flash
+    const isNewAction = lastScorerAction.timestamp !== lastScorerTimestamp;
+    
+    if (isNewAction) {
+      lastScorerTimestamp = lastScorerAction.timestamp;
+      // Resetta l'animazione precedente
+      scorerSection.style.animation = 'none';
     }
-  });
 
-  document.getElementById('activePlayers').textContent = activePlayersCount;
-  document.getElementById('homeFouls').textContent = totalHomeFouls;
-
-  // Gestione dinamica dell'ultimo marcatore
-  if (lastScorerAction && lastScorerAction.name) {
-    document.getElementById('lastScorerSection').style.display = 'block';
-    document.getElementById('lastScorerName').textContent = lastScorerAction.name;
-    document.getElementById('lastScorerPoints').textContent = `+${lastScorerAction.type}`;
-    document.getElementById('lastScorerType').textContent = `Tiro da ${lastScorerAction.type}`;
+    if (lastScorerAction.team === 'away' || lastScorerAction.isAway) {
+      // Configurazione per Canestro AVVERSARIO
+      scorerSection.className = "last-scorer-section away-scorer";
+      document.getElementById('lastScorerLabel').textContent = "⚠️ Canestro subito";
+      document.getElementById('lastScorerName').textContent = awayTeam || "Avversario";
+      document.getElementById('lastScorerPoints').textContent = `+${lastScorerAction.type || 2}`;
+      document.getElementById('lastScorerType').textContent = `Tiro da ${lastScorerAction.type || 2}`;
+      
+      if (isNewAction) {
+        setTimeout(() => { scorerSection.style.animation = 'flashUpdateAway 0.8s ease-out'; }, 10);
+      }
+    } else {
+      // Configurazione per Canestro CASA (Ponte di Nona)
+      scorerSection.className = "last-scorer-section home-scorer";
+      document.getElementById('lastScorerLabel').textContent = "⭐ Ultimo marcatore";
+      document.getElementById('lastScorerName').textContent = lastScorerAction.name || "-";
+      document.getElementById('lastScorerPoints').textContent = `+${lastScorerAction.type || 2}`;
+      document.getElementById('lastScorerType').textContent = `Tiro da ${lastScorerAction.type || 2}`;
+      
+      if (isNewAction) {
+        setTimeout(() => { scorerSection.style.animation = 'flashUpdateHome 0.8s ease-out'; }, 10);
+      }
+    }
   } else {
-    document.getElementById('lastScorerSection').style.display = 'none';
+    scorerSection.style.display = 'none';
   }
 
-  // Generazione della lista dei giocatori
+  // Generazione Lista Giocatori Attivi (In Campo)
   const playersList = document.getElementById('playersList');
   playersList.innerHTML = '';
+
+  const activePlayers_list = players.filter(p => p.active);
 
   activePlayers_list.forEach((p) => {
     const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
