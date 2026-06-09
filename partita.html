@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🏀 Ponte di Nona - Live</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF6B00;
+    --blue-dark: #003087;
+    --blue-mid: #1565C0;
+    --dark: #0d1b2a;
+    --darker: #081422;
+    --surface: #132035;
+    --text: #f0f4f8;
+    --text-dim: #8fa5bb;
+    --foul-red: #ef5350;
+    --green: #4caf50;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  /* ─── SCOREBOARD PRINCIPALE ─── */
+  .scoreboard-main {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, #001a5e 100%);
+    border-radius: 20px;
+    padding: 30px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--orange);
+  }
+
+  .score-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+
+  .team {
+    text-align: center;
+    flex: 1;
+  }
+
+  .team-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .team.home .team-name {
+    color: var(--orange);
+  }
+
+  .team.away .team-name {
+    color: #64b5f6;
+  }
+
+  .score-big {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .team.home .score-big {
+    color: var(--orange);
+    animation: scoreUpdate 0.5s ease-out;
+  }
+
+  .team.away .score-big {
+    color: #64b5f6;
+    animation: scoreUpdate 0.5s ease-out;
+  }
+
+  @keyframes scoreUpdate {
+    0% {
+      transform: scale(1.1);
+      text-shadow: 0 0 20px rgba(255, 107, 0, 0.8);
+    }
+    100% {
+      transform: scale(1);
+      text-shadow: none;
+    }
+  }
+
+  .separator {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 60px;
+    font-weight: 300;
+    color: var(--text-dim);
+    margin: 0 10px;
+  }
+
+  .quarter-info {
+    background: rgba(255, 107, 0, 0.15);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    border: 2px solid var(--orange);
+  }
+
+  .quarter-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .quarter-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--orange);
+  }
+
+  /* ─── LAST SCORER ─── */
+  .last-scorer-section {
+    background: var(--surface);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--orange);
+  }
+
+  .last-scorer-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .last-scorer-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .scorer-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .scorer-points {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--orange);
+  }
+
+  /* ─── STATS GRID ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--text);
+  }
+
+  .stat-value.fouls {
+    color: var(--foul-red);
+  }
+
+  /* ─── PLAYERS ON COURT ─── */
+  .players-section {
+    background: var(--surface);
+    border-radius: 15px;
+    padding: 20px;
+    border-top: 3px solid var(--orange);
+  }
+
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 16px;
+  }
+
+  .player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--orange);
+  }
+
+  .player-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .player-stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .player-pts {
+    background: var(--orange);
+    color: white;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .player-fouls {
+    background: rgba(239, 83, 80, 0.2);
+    color: var(--foul-red);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ─── NO DATA ─── */
+  .no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .loading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .loading::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+  }
+
+  /* ─── FIREBASE STATUS ─── */
+  .firebase-status {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+    z-index: 999;
+  }
+
+  .firebase-status.offline {
+    background: #ff9800;
+    animation: blink-offline 0.5s infinite;
+  }
+
+  @keyframes blink-offline {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 480px) {
+    .scoreboard-main {
+      padding: 20px 15px;
+    }
+
+    .score-big {
+      font-size: 60px;
+    }
+
+    .separator {
+      font-size: 45px;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="firebase-status" id="firebaseStatus"></div>
+
+<div class="container">
+  <div id="noDataView" class="no-data">
+    <div class="loading">Connessione in corso</div>
+  </div>
+
+  <div id="mainView" style="display: none;">
+    <!-- SCOREBOARD PRINCIPALE -->
+    <div class="scoreboard-main">
+      <div class="score-container">
+        <div class="team home">
+          <div class="team-name" id="homeTeamName">PONTE</div>
+          <div class="score-big" id="homeScore">0</div>
+        </div>
+        <div class="separator">—</div>
+        <div class="team away">
+          <div class="team-name" id="awayTeamName">AVV</div>
+          <div class="score-big" id="awayScore">0</div>
+        </div>
+      </div>
+
+      <div class="quarter-info">
+        <div class="quarter-label">Quarto</div>
+        <div class="quarter-number" id="quarterNumber">1</div>
+      </div>
+    </div>
+
+    <!-- ULTIMO MARCATORE -->
+    <div class="last-scorer-section" id="lastScorerSection" style="display: none;">
+      <div class="last-scorer-label">⭐ Ultimo marcatore</div>
+      <div class="last-scorer-info">
+        <div class="scorer-name" id="lastScorerName">-</div>
+        <div class="scorer-points" id="lastScorerPoints">0</div>
+      </div>
+    </div>
+
+    <!-- STATISTICHE RAPIDE -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Giocatori in Campo</div>
+        <div class="stat-value" id="activePlayers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Falli CASA</div>
+        <div class="stat-value fouls" id="homeFouls">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Falli AVV</div>
+        <div class="stat-value fouls" id="awayFouls">0</div>
+      </div>
+    </div>
+
+    <!-- GIOCATORI IN CAMPO -->
+    <div class="players-section">
+      <div class="section-title">👥 Giocatori in Campo</div>
+      <div id="playersList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtkWH5ekxU7YK-LvXLR0hhb-cyrFmxc34",
+  authDomain: "basket-scoresheet.firebaseapp.com",
+  projectId: "basket-scoresheet",
+  storageBucket: "basket-scoresheet.firebasestorage.app",
+  messagingSenderId: "239574167542",
+  appId: "1:239574167542:web:abcd8f2a2d62fa132061d7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Ascolta i cambiamenti del documento "current" in tempo reale
+const docRef = doc(db, "matches", "current");
+let lastHomeScore = 0;
+
+const unsubscribe = onSnapshot(
+  docRef,
+  (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      updateUI(data);
+      updateFirebaseStatus(true);
+    } else {
+      document.getElementById('noDataView').style.display = 'block';
+      document.getElementById('mainView').style.display = 'none';
+    }
+  },
+  (error) => {
+    console.warn('Errore Firestore:', error);
+    updateFirebaseStatus(false);
+  }
+);
+
+function updateFirebaseStatus(online) {
+  const status = document.getElementById('firebaseStatus');
+  if (online) {
+    status.classList.remove('offline');
+  } else {
+    status.classList.add('offline');
+  }
+}
+
+function updateUI(data) {
+  const {
+    homeTeam = 'PONTE',
+    awayTeam = 'AVV',
+    homeScore = 0,
+    awayScore = 0,
+    quarter = 1,
+    players = []
+  } = data;
+
+  // Update scoreboard
+  document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
+  document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
+  
+  // Anima il punteggio se è cambiato
+  const homeScoreEl = document.getElementById('homeScore');
+  if (homeScore !== lastHomeScore) {
+    homeScoreEl.style.animation = 'none';
+    setTimeout(() => {
+      homeScoreEl.style.animation = 'scoreUpdate 0.5s ease-out';
+      homeScoreEl.textContent = homeScore;
+      lastHomeScore = homeScore;
+    }, 10);
+  } else {
+    homeScoreEl.textContent = homeScore;
+  }
+
+  document.getElementById('awayScore').textContent = awayScore;
+  document.getElementById('quarterNumber').textContent = quarter;
+
+  // Calcola statistiche
+  let totalHomeFouls = 0;
+  let totalAwayFouls = 0;
+  let activePlayers = 0;
+  let lastScorer = null;
+  let lastScorerPoints = 0;
+
+  const activePlayers_list = [];
+
+  players.forEach((p) => {
+    if (p.active) {
+      activePlayers++;
+      totalHomeFouls += p.fouls || 0;
+      activePlayers_list.push(p);
+
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      if (pts > 0 && (lastScorer === null || pts > lastScorerPoints)) {
+        lastScorer = p.name;
+        lastScorerPoints = pts;
+      }
+    }
+  });
+
+  // Update stats
+  document.getElementById('activePlayers').textContent = activePlayers;
+  document.getElementById('homeFouls').textContent = totalHomeFouls;
+  document.getElementById('awayFouls').textContent = 0; // Avversario non ha dati dettagliati
+
+  // Update last scorer
+  if (lastScorer) {
+    document.getElementById('lastScorerSection').style.display = 'block';
+    document.getElementById('lastScorerName').textContent = lastScorer;
+    document.getElementById('lastScorerPoints').textContent = lastScorerPoints;
+  }
+
+  // Update players list
+  const playersList = document.getElementById('playersList');
+  playersList.innerHTML = '';
+
+  activePlayers_list.forEach((p) => {
+    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+    const fouls = p.fouls || 0;
+
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `
+      <div class="player-name">${p.name}</div>
+      <div class="player-stats">
+        <div class="player-pts">${pts}</div>
+        ${fouls > 0 ? `<div class="player-fouls">${fouls}</div>` : ''}
+      </div>
+    `;
+    playersList.appendChild(row);
+  });
+
+  // Mostra la view principale
+  document.getElementById('noDataView').style.display = 'none';
+  document.getElementById('mainView').style.display = 'block';
+}
+
+// Gestisci errori di connessione
+window.addEventListener('offline', () => updateFirebaseStatus(false));
+window.addEventListener('online', () => updateFirebaseStatus(true));
+</script>
+
+</body>
+</html>
