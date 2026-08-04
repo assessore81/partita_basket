@@ -108,6 +108,51 @@
   }
   .quarter-badge:active { transform: scale(.9); }
 
+  .timer-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 4px 6px 4px 12px;
+    margin-left: 4px;
+  }
+
+  .timer-display {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-bottom: 1px dashed rgba(255,255,255,0.3);
+    user-select: none;
+    min-width: 46px;
+    text-align: center;
+  }
+  .timer-display.timer-running { color: var(--green); border-bottom-color: transparent; }
+  .timer-display.timer-danger { color: var(--foul-red); }
+
+  .timer-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: var(--green);
+    color: white;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform .12s, background .15s;
+    user-select: none;
+  }
+  .timer-btn:active { transform: scale(.88); }
+  .timer-btn.running { background: var(--foul-red); }
+
   .scoreboard {
     display: flex;
     align-items: stretch;
@@ -371,6 +416,57 @@
   .btn-1 { background: #1976D2; color: white; }
   .btn-2 { background: var(--orange); color: white; }
   .btn-3 { background: #7B1FA2; color: white; }
+
+  .ft-section {
+    background: rgba(38,166,154,0.06);
+    border: 1px solid rgba(38,166,154,0.2);
+    border-radius: 10px;
+    padding: 8px;
+  }
+
+  .ft-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    padding: 0 2px;
+  }
+
+  .ft-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #4db6ac;
+    text-transform: uppercase;
+  }
+
+  .ft-attempted {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .ft-attempted b { color: var(--white); }
+
+  .btn-ft-award {
+    background: rgba(38,166,154,0.18);
+    color: #4db6ac;
+    border: 1px solid rgba(38,166,154,0.4);
+    border-radius: 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform .12s, filter .12s;
+  }
+  .btn-ft-award:active { transform: scale(.92); filter: brightness(1.3); }
+
+  .btn-ftmade { background: var(--green); color: white; }
+  .btn-ftmiss { background: var(--foul-red); color: white; }
 
   .foul-row-outer {
     display: flex;
@@ -883,6 +979,10 @@
       <div class="quarter-controls">
         <span class="quarter-label">QUARTO</span>
         <div class="quarter-badge" id="quarterBadge" onclick="nextQuarter()">1</div>
+        <div class="timer-box">
+          <span class="timer-display" id="timerDisplay" onclick="editTimer()" title="Tocca per modificare il tempo">10:00</span>
+          <button class="timer-btn" id="timerToggleBtn" onclick="toggleTimer()" title="Avvia/Ferma">▶</button>
+        </div>
       </div>
     </div>
 
@@ -967,6 +1067,7 @@
             <th>1PT</th>
             <th>2PT</th>
             <th>3PT</th>
+            <th>TL</th>
             <th>TOT</th>
             <th>F</th>
           </tr>
@@ -1018,24 +1119,28 @@ window.firebaseReady = true;
 
 async function saveToFirebase() {
   try {
-    const homeScoreNum = players.reduce((sum, p) => {
-      return sum + ((p.pt1 || 0) * 1 + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3);
-    }, 0);
-
     const homeName = document.getElementById('homeName').value || 'PONTE DI NONA';
     const awayName = document.getElementById('awayName').value || 'AVVERSARIO';
     
+    const homeScoreWithFt = players.reduce((sum, p) => {
+      return sum + ((p.pt1 || 0) * 1 + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0) * 1);
+    }, 0);
+
     const docRef = doc(db, "matches", "current");
     await setDoc(docRef, {
       homeTeam: homeName,
       awayTeam: awayName,
-      homeScore: homeScoreNum,
+      homeScore: homeScoreWithFt,
       awayScore: awayScore || 0,
       quarter: quarter || 1,
       players: players || [],
       quarterHistory: quarterHistory || [],
       quarterStartHome: quarterStartHome || 0,
       quarterStartAway: quarterStartAway || 0,
+      timerSeconds: (typeof timerSeconds !== 'undefined') ? timerSeconds : 600,
+      timerRunning: (typeof timerRunning !== 'undefined') ? timerRunning : false,
+      timerEndAt: (typeof timerEndAt !== 'undefined') ? timerEndAt : null,
+      ftEvent: window.ftEvent || null,
       updatedAt: new Date()
     }, { merge: true });
     
@@ -1060,23 +1165,31 @@ let quarterStartAway = 0;
 let lastScorerAction = JSON.parse(localStorage.getItem('bball_last_scorer') || 'null');
 window.lastScorerAction = lastScorerAction;
 
+const TIMER_DEFAULT_SECONDS = 600;
+let timerSeconds = parseFloat(localStorage.getItem('bball_timer_seconds'));
+if (isNaN(timerSeconds)) timerSeconds = TIMER_DEFAULT_SECONDS;
+let timerRunning = localStorage.getItem('bball_timer_running') === '1';
+let timerEndAt = parseInt(localStorage.getItem('bball_timer_endat') || '');
+if (isNaN(timerEndAt)) timerEndAt = null;
+if (timerRunning && !timerEndAt) timerRunning = false;
+
 const DEFAULT_PLAYERS = [
-  { name: '04 - MATTYAS',  pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '15 - LEONARDO', pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '40 - SAMUELE',  pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '46 - FEDERICO', pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '56 - VALERIO',  pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '64 - MANUEL',   pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '72 - MATTEO',   pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '73 - SIMONE',   pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '77 - DANIELE',  pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: '95 - FRANCESCO',pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: 'Giocatore 11',  pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
-  { name: 'Giocatore 12',  pt1:0, pt2:0, pt3:0, fouls:0, active:true, onCourt:false },
+  { name: '04 - MATTYAS',  pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '15 - LEONARDO', pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '40 - SAMUELE',  pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '46 - FEDERICO', pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '56 - VALERIO',  pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '64 - MANUEL',   pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '72 - MATTEO',   pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '73 - SIMONE',   pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '77 - DANIELE',  pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: '95 - FRANCESCO',pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: 'Giocatore 11',  pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
+  { name: 'Giocatore 12',  pt1:0, pt2:0, pt3:0, fouls:0, ftMade:0, ftMissed:0, active:true, onCourt:false },
 ];
 
 let players = JSON.parse(localStorage.getItem('bball_players') || 'null') || DEFAULT_PLAYERS.map(p => ({...p}));
-players = players.map(p => ({ active: true, onCourt: false, ...p }));
+players = players.map(p => ({ active: true, onCourt: false, ftMade: 0, ftMissed: 0, ...p }));
 
 awayScore = parseInt(localStorage.getItem('bball_away') || '0');
 quarter = parseInt(localStorage.getItem('bball_quarter') || '1');
@@ -1098,7 +1211,92 @@ function save() {
   }
 }
 
-function totalPts(p) { return p.pt1 + p.pt2*2 + p.pt3*3; }
+function totalPts(p) { return p.pt1 + p.pt2*2 + p.pt3*3 + (p.ftMade || 0); }
+
+function formatTime(s) {
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+}
+
+function getCurrentTimerSeconds() {
+  if (timerRunning && timerEndAt) {
+    return Math.max(0, (timerEndAt - Date.now()) / 1000);
+  }
+  return timerSeconds;
+}
+
+function renderTimer() {
+  const remaining = getCurrentTimerSeconds();
+  const display = document.getElementById('timerDisplay');
+  const btn = document.getElementById('timerToggleBtn');
+  if (!display || !btn) return;
+  display.textContent = formatTime(remaining);
+  display.classList.toggle('timer-running', timerRunning);
+  display.classList.toggle('timer-danger', remaining <= 60 && remaining > 0);
+  btn.textContent = timerRunning ? '⏸' : '▶';
+  btn.classList.toggle('running', timerRunning);
+}
+
+function saveTimer() {
+  localStorage.setItem('bball_timer_seconds', timerSeconds);
+  localStorage.setItem('bball_timer_running', timerRunning ? '1' : '0');
+  localStorage.setItem('bball_timer_endat', timerEndAt || '');
+  save();
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    timerSeconds = getCurrentTimerSeconds();
+    timerRunning = false;
+    timerEndAt = null;
+  } else {
+    timerEndAt = Date.now() + timerSeconds * 1000;
+    timerRunning = true;
+  }
+  saveTimer();
+  renderTimer();
+}
+
+function editTimer() {
+  if (timerRunning) {
+    timerSeconds = getCurrentTimerSeconds();
+    timerRunning = false;
+    timerEndAt = null;
+  }
+  const input = prompt('Modifica tempo del quarto (MM:SS):', formatTime(timerSeconds));
+  if (input !== null) {
+    const parts = input.trim().split(':').map(x => parseInt(x, 10));
+    let secs = NaN;
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) secs = parts[0] * 60 + parts[1];
+    else if (parts.length === 1 && !isNaN(parts[0])) secs = parts[0] * 60;
+    if (!isNaN(secs) && secs >= 0) timerSeconds = secs;
+  }
+  saveTimer();
+  renderTimer();
+}
+
+function resetTimerForNewQuarter() {
+  timerSeconds = TIMER_DEFAULT_SECONDS;
+  timerRunning = false;
+  timerEndAt = null;
+  saveTimer();
+  renderTimer();
+}
+
+setInterval(() => {
+  if (timerRunning) {
+    const remaining = getCurrentTimerSeconds();
+    if (remaining <= 0) {
+      timerSeconds = 0;
+      timerRunning = false;
+      timerEndAt = null;
+      saveTimer();
+    }
+  }
+  renderTimer();
+}, 250);
 
 function extractJerseyNumber(name) {
   const match = name.match(/^(\d+)\s*[-–]?\s*/);
@@ -1206,6 +1404,31 @@ function render() {
             </div>
           </div>
         </div>
+        <div class="ft-section">
+          <div class="ft-header">
+            <span class="ft-title">🎯 Tiri Liberi</span>
+            <button class="btn-ft-award" onclick="ftAward(${i})">Assegnati</button>
+          </div>
+          <div class="pts-row">
+            <div class="pt-group">
+              <div class="pt-label">Segnato</div>
+              <span class="pt-count" id="ftm-${i}">${p.ftMade || 0}</span>
+              <div class="pt-btn-row">
+                <button class="btn-pt btn-minus" onclick="addFt(${i},'made',-1)">−</button>
+                <button class="btn-pt btn-ftmade btn-add" onclick="addFt(${i},'made',1)">✓</button>
+              </div>
+            </div>
+            <div class="pt-group">
+              <div class="pt-label">Sbagliato</div>
+              <span class="pt-count" id="ftx-${i}">${p.ftMissed || 0}</span>
+              <div class="pt-btn-row">
+                <button class="btn-pt btn-minus" onclick="addFt(${i},'missed',-1)">−</button>
+                <button class="btn-pt btn-ftmiss btn-add" onclick="addFt(${i},'missed',1)">✗</button>
+              </div>
+            </div>
+          </div>
+          <div class="ft-attempted">Tirati: <b id="fta-${i}">${(p.ftMade||0)+(p.ftMissed||0)}</b></div>
+        </div>
         <div class="foul-row-outer">
           <div class="foul-label">⚠ Falli</div>
           <button class="btn-foul minus" onclick="addFoul(${i},-1)">−</button>
@@ -1276,6 +1499,55 @@ function addPt(idx, type, delta) {
   updateTotals();
   renderNav();
 }
+function ftAward(idx) {
+  window.ftEvent = {
+    team: 'home',
+    name: players[idx].name,
+    text: 'Tiri liberi assegnati',
+    ts: Date.now()
+  };
+  const card = document.getElementById(`player-card-${idx}`);
+  if (card) {
+    card.classList.remove('highlight');
+    void card.offsetWidth;
+    card.classList.add('highlight');
+    setTimeout(() => card.classList.remove('highlight'), 900);
+  }
+  save();
+}
+
+function addFt(idx, kind, delta) {
+  if (kind === 'made') {
+    players[idx].ftMade = Math.max(0, (players[idx].ftMade || 0) + delta);
+  } else {
+    players[idx].ftMissed = Math.max(0, (players[idx].ftMissed || 0) + delta);
+  }
+
+  if (delta > 0 && kind === 'missed') {
+    window.ftEvent = {
+      team: 'home',
+      name: players[idx].name,
+      text: 'Tiro libero sbagliato',
+      ts: Date.now()
+    };
+  }
+
+  document.getElementById(`ftm-${idx}`).textContent = players[idx].ftMade || 0;
+  document.getElementById(`ftx-${idx}`).textContent = players[idx].ftMissed || 0;
+  document.getElementById(`fta-${idx}`).textContent = (players[idx].ftMade || 0) + (players[idx].ftMissed || 0);
+
+  const tot = totalPts(players[idx]);
+  const badge = document.getElementById(`badge-${idx}`);
+  badge.textContent = tot;
+  badge.classList.remove('pulse');
+  void badge.offsetWidth;
+  badge.classList.add('pulse');
+
+  updateTotals();
+  renderNav();
+  save();
+}
+
 function addFoul(idx, delta) {
   players[idx].fouls = Math.max(0, players[idx].fouls + delta);
   const el = document.getElementById(`f-${idx}`);
@@ -1339,6 +1611,7 @@ function confirmQuarter(storicise) {
   }
   quarter = quarter >= 4 ? 1 : quarter + 1;
   document.getElementById('quarterBadge').textContent = quarter;
+  resetTimerForNewQuarter();
   save();
 }
 
@@ -1358,12 +1631,14 @@ function openStats() {
     const tot = totalPts(p);
     if (tot === 0 && p.fouls === 0 && p.name.startsWith('Giocatore')) return;
     totalP += tot; totalF += p.fouls;
+    const ftAttempted = (p.ftMade || 0) + (p.ftMissed || 0);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${p.name}</td>
       <td>${p.pt1}</td>
       <td>${p.pt2}</td>
       <td>${p.pt3}</td>
+      <td>${p.ftMade || 0}/${ftAttempted}</td>
       <td class="total-cell">${tot}</td>
       <td class="foul-cell">${p.fouls}</td>
     `;
@@ -1373,7 +1648,7 @@ function openStats() {
   const tot_row = document.createElement('tr');
   tot_row.innerHTML = `
     <td style="font-weight:900;color:var(--orange)">TOTALE</td>
-    <td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td>
     <td class="total-cell" style="font-size:20px">${totalP}</td>
     <td class="foul-cell" style="font-size:18px;font-weight:900">${totalF}</td>
   `;
@@ -1418,16 +1693,22 @@ function confirmReset() {
     awayScore = 0; quarter = 1;
     quarterHistory = []; quarterStartHome = 0; quarterStartAway = 0;
     window.lastAction = null;
+    window.ftEvent = null;
     localStorage.clear();
     document.getElementById('quarterBadge').textContent = 1;
+    timerSeconds = TIMER_DEFAULT_SECONDS;
+    timerRunning = false;
+    timerEndAt = null;
     closeStats();
     render();
+    renderTimer();
     save();
   }
 }
 
 render();
 document.getElementById('quarterBadge').textContent = quarter;
+renderTimer();
 const savedAwayName = localStorage.getItem('bball_awayname');
 if (savedAwayName) document.getElementById('awayName').value = savedAwayName;
 const savedHomeName = localStorage.getItem('bball_awayname_home');
