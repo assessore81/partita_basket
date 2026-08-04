@@ -481,21 +481,149 @@
   }
 
   /* ─── VOCI DALLO STADIO (fumetti pixel art) ─── */
-  .voices-section {
+
+  /* Notifica a comparsa quando arriva un nuovo commento */
+  .voice-event-banner {
     background: var(--surface);
     border-radius: 15px;
-    padding: 18px 16px;
-    border-top: 3px solid var(--orange);
-    margin-bottom: 20px;
     display: flex;
-    flex-direction: column;
-    gap: 14px;
+    align-items: flex-start;
+    gap: 12px;
+    border-left: 4px solid var(--orange);
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 16px;
+    margin-bottom: 0;
+    transition: opacity 0.35s ease, max-height 0.4s ease, padding 0.35s ease, margin 0.35s ease;
+  }
+
+  .voice-event-banner.show {
+    opacity: 1;
+    max-height: 260px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .voice-event-banner.becero { border-left-color: #d32f2f; }
+  .voice-event-banner.giornalista { border-left-color: #1565C0; }
+  .voice-event-banner.sfegatato { border-left-color: var(--orange); }
+
+  .voice-event-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.3);
+    overflow: hidden;
+    animation: ftIconPop 0.5s ease-out;
+  }
+  .voice-event-icon svg { width: 100%; height: 100%; }
+
+  .voice-event-body { flex: 1; min-width: 0; }
+
+  .voice-event-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .voice-event-banner.becero .voice-event-label { color: #ef5350; }
+  .voice-event-banner.giornalista .voice-event-label { color: #64b5f6; }
+  .voice-event-banner.sfegatato .voice-event-label { color: var(--orange); }
+
+  .voice-event-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Pulsante flottante per rivedere tutte le voci */
+  .voices-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--orange);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255,107,0,0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .voices-fab:active { transform: scale(.92); }
+
+  .voices-fab-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ef5350;
+    border: 2px solid var(--darker);
+    display: none;
+  }
+  .voices-fab-dot.show { display: block; }
+
+  /* Modale "tutte le voci dallo stadio" */
+  .voices-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .voices-modal-overlay.open { display: flex; }
+
+  .voices-modal {
+    background: var(--dark);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 20px 16px 28px;
+    border-top: 3px solid var(--orange);
+    animation: slideUpVoices .3s ease-out;
+  }
+
+  @keyframes slideUpVoices {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .voices-modal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 18px;
   }
 
   .voice-row {
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    margin-bottom: 14px;
   }
 
   .voice-icon-wrap {
@@ -509,17 +637,12 @@
     align-items: center;
     justify-content: center;
     border: 2px solid rgba(255,255,255,0.08);
-    transition: border-color .3s, box-shadow .3s;
   }
   .voice-icon-wrap svg { width: 100%; height: 100%; }
 
   .voice-icon-wrap.becero { border-color: rgba(211,47,47,0.4); }
   .voice-icon-wrap.giornalista { border-color: rgba(21,101,192,0.4); }
   .voice-icon-wrap.sfegatato { border-color: rgba(255,107,0,0.4); }
-
-  .voice-icon-wrap.glow-becero { border-color: #d32f2f; box-shadow: 0 0 16px rgba(211,47,47,0.7); }
-  .voice-icon-wrap.glow-giornalista { border-color: #1565C0; box-shadow: 0 0 16px rgba(21,101,192,0.7); }
-  .voice-icon-wrap.glow-sfegatato { border-color: var(--orange); box-shadow: 0 0 16px rgba(255,107,0,0.7); }
 
   .speech-bubble {
     position: relative;
@@ -573,14 +696,20 @@
     font-weight: 400;
   }
 
-  .speech-bubble.pop {
-    animation: bubblePop 0.6s ease-out;
-  }
-
-  @keyframes bubblePop {
-    0% { transform: scale(0.9); background: rgba(255,255,255,0.18); }
-    60% { transform: scale(1.03); }
-    100% { transform: scale(1); background: rgba(255,255,255,0.05); }
+  .btn-close-voices {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: var(--text-dim);
+    padding: 12px;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 4px;
   }
 
   /* ─── NO DATA ─── */
@@ -707,27 +836,11 @@
       </div>
     </div>
 
-    <div class="voices-section">
-      <div class="voice-row">
-        <div class="voice-icon-wrap becero" id="icon-becero"></div>
-        <div class="speech-bubble becero" id="bubble-becero">
-          <div class="voice-label">Il Tifoso Becero</div>
-          <div class="voice-text placeholder" id="text-becero">In attesa di un commento...</div>
-        </div>
-      </div>
-      <div class="voice-row">
-        <div class="voice-icon-wrap giornalista" id="icon-giornalista"></div>
-        <div class="speech-bubble giornalista" id="bubble-giornalista">
-          <div class="voice-label">Il Giornalista Obiettivo</div>
-          <div class="voice-text placeholder" id="text-giornalista">In attesa di un commento...</div>
-        </div>
-      </div>
-      <div class="voice-row">
-        <div class="voice-icon-wrap sfegatato" id="icon-sfegatato"></div>
-        <div class="speech-bubble sfegatato" id="bubble-sfegatato">
-          <div class="voice-label">Il Tifoso Sfegatato</div>
-          <div class="voice-text placeholder" id="text-sfegatato">In attesa di un commento...</div>
-        </div>
+    <div class="voice-event-banner" id="voiceEventBanner">
+      <div class="voice-event-icon" id="voiceEventIcon"></div>
+      <div class="voice-event-body">
+        <div class="voice-event-label" id="voiceEventLabel">-</div>
+        <div class="voice-event-text" id="voiceEventText">-</div>
       </div>
     </div>
 
@@ -738,6 +851,41 @@
       <div class="section-title bench">🛋️ A Disposizione</div>
       <div id="playersOnBench"></div>
     </div>
+  </div>
+</div>
+
+<button class="voices-fab" id="voicesFab" onclick="openVoicesModal()" title="Voci dallo stadio">
+  🗣️
+  <span class="voices-fab-dot" id="voicesFabDot"></span>
+</button>
+
+<div class="voices-modal-overlay" id="voicesModalOverlay">
+  <div class="voices-modal">
+    <div class="voices-modal-title">🗣️ Voci dallo Stadio</div>
+
+    <div class="voice-row">
+      <div class="voice-icon-wrap becero" id="modal-icon-becero"></div>
+      <div class="speech-bubble becero">
+        <div class="voice-label">Il Tifoso Becero</div>
+        <div class="voice-text placeholder" id="modal-text-becero">In attesa di un commento...</div>
+      </div>
+    </div>
+    <div class="voice-row">
+      <div class="voice-icon-wrap giornalista" id="modal-icon-giornalista"></div>
+      <div class="speech-bubble giornalista">
+        <div class="voice-label">Il Giornalista Obiettivo</div>
+        <div class="voice-text placeholder" id="modal-text-giornalista">In attesa di un commento...</div>
+      </div>
+    </div>
+    <div class="voice-row">
+      <div class="voice-icon-wrap sfegatato" id="modal-icon-sfegatato"></div>
+      <div class="speech-bubble sfegatato">
+        <div class="voice-label">Il Tifoso Sfegatato</div>
+        <div class="voice-text placeholder" id="modal-text-sfegatato">In attesa di un commento...</div>
+      </div>
+    </div>
+
+    <button class="btn-close-voices" onclick="closeVoicesModal()">Chiudi</button>
   </div>
 </div>
 
@@ -845,42 +993,87 @@ function pixelArtSVG(grid, palette, ps) {
 
 function renderVoiceIcons() {
   ['becero', 'giornalista', 'sfegatato'].forEach(key => {
-    const el = document.getElementById('icon-' + key);
+    const el = document.getElementById('modal-icon-' + key);
     if (el) el.innerHTML = pixelArtSVG(PIXEL_GRIDS[key], PIXEL_PALETTES[key], 8);
   });
 }
 renderVoiceIcons();
 
+const VOICE_LABELS = {
+  becero: '😡 Il Tifoso Becero',
+  giornalista: '🎙️ Il Giornalista Obiettivo',
+  sfegatato: '🔥 Il Tifoso Sfegatato'
+};
+
 let prevCommentTs = { becero: null, giornalista: null, sfegatato: null };
+let voiceBannerTimeout = null;
+let voicesModalOpen = false;
+
+function showVoiceBanner(key, text) {
+  const banner = document.getElementById('voiceEventBanner');
+  const iconEl = document.getElementById('voiceEventIcon');
+  const labelEl = document.getElementById('voiceEventLabel');
+  const textEl = document.getElementById('voiceEventText');
+  if (!banner) return;
+
+  banner.classList.remove('becero', 'giornalista', 'sfegatato');
+  banner.classList.add(key);
+  iconEl.innerHTML = pixelArtSVG(PIXEL_GRIDS[key], PIXEL_PALETTES[key], 6);
+  labelEl.textContent = VOICE_LABELS[key] || key;
+  textEl.textContent = text;
+
+  if (voiceBannerTimeout) clearTimeout(voiceBannerTimeout);
+  banner.classList.remove('show');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+
+  // Durata proporzionale alla lunghezza del testo, cosi' c'e' tempo di leggerlo
+  const duration = Math.min(18000, Math.max(5000, 3000 + text.length * 90));
+  voiceBannerTimeout = setTimeout(() => banner.classList.remove('show'), duration);
+}
 
 function updateVoices(comments) {
   comments = comments || {};
+  let hasNew = false;
+
   ['becero', 'giornalista', 'sfegatato'].forEach(key => {
     const entry = comments[key];
-    const textEl = document.getElementById('text-' + key);
-    const bubbleEl = document.getElementById('bubble-' + key);
-    const iconEl = document.getElementById('icon-' + key).parentElement;
     if (!entry || !entry.text) return;
 
+    // Aggiorna sempre il contenuto della schermata "vedi tutte"
+    const modalTextEl = document.getElementById('modal-text-' + key);
+    if (modalTextEl) {
+      modalTextEl.textContent = entry.text;
+      modalTextEl.classList.remove('placeholder');
+    }
+
     if (entry.ts !== prevCommentTs[key]) {
+      const isFirstLoad = prevCommentTs[key] === null;
       prevCommentTs[key] = entry.ts;
-      textEl.textContent = entry.text;
-      textEl.classList.remove('placeholder');
-
-      bubbleEl.classList.remove('pop');
-      void bubbleEl.offsetWidth;
-      bubbleEl.classList.add('pop');
-
-      iconEl.classList.remove('glow-' + key);
-      void iconEl.offsetWidth;
-      iconEl.classList.add('glow-' + key);
-      setTimeout(() => iconEl.classList.remove('glow-' + key), 3000);
-    } else if (textEl.classList.contains('placeholder')) {
-      textEl.textContent = entry.text;
-      textEl.classList.remove('placeholder');
+      if (!isFirstLoad) {
+        showVoiceBanner(key, entry.text);
+        if (!voicesModalOpen) hasNew = true;
+      }
     }
   });
+
+  if (hasNew) {
+    document.getElementById('voicesFabDot').classList.add('show');
+  }
 }
+
+function openVoicesModal() {
+  document.getElementById('voicesModalOverlay').classList.add('open');
+  document.getElementById('voicesFabDot').classList.remove('show');
+  voicesModalOpen = true;
+}
+
+function closeVoicesModal() {
+  document.getElementById('voicesModalOverlay').classList.remove('open');
+  voicesModalOpen = false;
+}
+window.openVoicesModal = openVoicesModal;
+window.closeVoicesModal = closeVoicesModal;
 
 const unsubscribe = onSnapshot(
   docRef,
