@@ -205,6 +205,79 @@
   .q-box-sep { color: var(--text-dim); margin: 0 3px; font-size: 14px; font-weight: 400; }
   .q-box-a { color: #64b5f6; }
 
+  /* ─── TIMER ─── */
+  .timer-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 6px 14px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 90px;
+  }
+
+  .timer-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
+  .timer-number.running { color: var(--green); }
+  .timer-number.danger { color: var(--foul-red); }
+
+  /* ─── FT EVENT BANNER ─── */
+  .ft-event-banner {
+    background: var(--surface);
+    border-radius: 15px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #26A69A;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    transition: opacity 0.35s ease, max-height 0.35s ease, padding 0.35s ease, margin 0.35s ease;
+  }
+
+  .ft-event-banner.show {
+    opacity: 1;
+    max-height: 100px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+
+  .ft-event-banner.miss { border-left-color: var(--foul-red); }
+
+  .ft-event-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .ft-event-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .ft-event-icon { font-size: 28px; }
+
   /* ─── LAST SCORER ─── */
   .last-scorer-section {
     background: var(--surface);
@@ -464,8 +537,21 @@
           <div class="quarter-number" id="quarterNumber">1</div>
         </div>
 
+        <div class="timer-info">
+          <div class="quarter-label">Tempo</div>
+          <div class="timer-number" id="timerNumber">10:00</div>
+        </div>
+
         <div class="quarters-history" id="quartersHistoryContainer" style="display: none;"></div>
       </div>
+    </div>
+
+    <div class="ft-event-banner" id="ftEventBanner">
+      <div>
+        <div class="ft-event-label" id="ftEventLabel">Tiri liberi</div>
+        <div class="ft-event-name" id="ftEventName">-</div>
+      </div>
+      <div class="ft-event-icon" id="ftEventIcon">🎯</div>
     </div>
 
     <div class="last-scorer-section" id="lastScorerSection" style="display: none;">
@@ -550,7 +636,7 @@ function detectChanges(data) {
     prevAwayScore = awayScore;
     prevPlayersState = {};
     players.forEach(p => {
-      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0);
       prevPlayersState[p.name] = pts;
     });
     return;
@@ -562,7 +648,7 @@ function detectChanges(data) {
     let pointText = '+' + delta;
 
     for (let p of players) {
-      const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+      const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0);
       const prevPts = prevPlayersState[p.name] || 0;
       if (currentPts > prevPts) {
         scorerName = p.name;
@@ -588,9 +674,58 @@ function detectChanges(data) {
   prevAwayScore = awayScore;
   prevPlayersState = {};
   players.forEach(p => {
-    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
+    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0);
     prevPlayersState[p.name] = pts;
   });
+}
+
+function formatTime(s) {
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+}
+
+let timerRunning = false;
+let timerEndAt = null;
+let timerSecondsStatic = 600;
+
+function renderTimerTick() {
+  const el = document.getElementById('timerNumber');
+  if (!el) return;
+  let remaining = timerSecondsStatic;
+  if (timerRunning && timerEndAt) {
+    remaining = Math.max(0, (timerEndAt - Date.now()) / 1000);
+  }
+  el.textContent = formatTime(remaining);
+  el.classList.toggle('running', timerRunning);
+  el.classList.toggle('danger', remaining <= 60 && remaining > 0);
+}
+setInterval(renderTimerTick, 250);
+
+let prevFtEventTs = null;
+let ftBannerTimeout = null;
+
+function showFtBanner(ftEvent) {
+  const banner = document.getElementById('ftEventBanner');
+  const label = document.getElementById('ftEventLabel');
+  const name = document.getElementById('ftEventName');
+  const icon = document.getElementById('ftEventIcon');
+  if (!banner) return;
+
+  const isMiss = ftEvent.text === 'Tiro libero sbagliato';
+  banner.classList.toggle('miss', isMiss);
+  label.textContent = isMiss ? '❌ Tiro libero sbagliato' : '🎯 Tiri liberi assegnati';
+  name.textContent = ftEvent.name || '-';
+  icon.textContent = isMiss ? '❌' : '🎯';
+
+  if (ftBannerTimeout) clearTimeout(ftBannerTimeout);
+  banner.classList.remove('show');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  ftBannerTimeout = setTimeout(() => {
+    banner.classList.remove('show');
+  }, 4000);
 }
 
 function updateUI(data) {
@@ -601,8 +736,22 @@ function updateUI(data) {
     awayScore = 0,
     quarter = 1,
     quarterHistory = [],
-    players = []
+    players = [],
+    timerSeconds = 600,
+    timerRunning: docTimerRunning = false,
+    timerEndAt: docTimerEndAt = null,
+    ftEvent = null
   } = data;
+
+  timerSecondsStatic = timerSeconds;
+  timerRunning = docTimerRunning;
+  timerEndAt = docTimerEndAt;
+  renderTimerTick();
+
+  if (ftEvent && ftEvent.ts && ftEvent.ts !== prevFtEventTs) {
+    prevFtEventTs = ftEvent.ts;
+    showFtBanner(ftEvent);
+  }
 
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
@@ -717,6 +866,7 @@ function updateUI(data) {
           <span class="pt-pill">1p: ${p.pt1 || 0}</span>
           <span class="pt-pill">2p: ${p.pt2 || 0}</span>
           <span class="pt-pill">3p: ${p.pt3 || 0}</span>
+          <span class="pt-pill">TL: ${p.ftMade || 0}/${(p.ftMade||0)+(p.ftMissed||0)}</span>
         </div>
         <div class="player-pts">${pts}</div>
         <div class="player-fouls ${foulClass}">${fouls}</div>
