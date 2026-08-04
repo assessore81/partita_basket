@@ -205,30 +205,57 @@
   .q-box-sep { color: var(--text-dim); margin: 0 3px; font-size: 14px; font-weight: 400; }
   .q-box-a { color: #64b5f6; }
 
-  /* ─── TIMER ─── */
-  .timer-info {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 6px 14px;
+  /* ─── TIMER (grande, leggibile da lontano) ─── */
+  .game-clock-row {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 12px 14px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 90px;
+    margin-top: 15px;
   }
 
-  .timer-number {
+  .game-clock-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
-    font-weight: 900;
-    color: var(--text);
-    line-height: 1;
-    letter-spacing: 1px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2px;
   }
 
-  .timer-number.running { color: var(--green); }
-  .timer-number.danger { color: var(--foul-red); }
+  .game-clock {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 76px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-shadow: 0 0 20px rgba(255,255,255,0.08);
+    transition: color 0.3s ease;
+  }
+
+  .game-clock.running {
+    color: var(--green);
+    text-shadow: 0 0 24px rgba(76,175,80,0.5);
+  }
+
+  .game-clock.danger {
+    color: var(--foul-red);
+    text-shadow: 0 0 24px rgba(239,83,80,0.6);
+    animation: clockPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes clockPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @media (max-width: 480px) {
+    .game-clock { font-size: 58px; }
+  }
 
   /* ─── FT EVENT BANNER ─── */
   .ft-event-banner {
@@ -257,26 +284,41 @@
     margin-bottom: 20px;
   }
 
+  .ft-event-banner.award { border-left-color: #ffb300; }
+  .ft-event-banner.made { border-left-color: var(--green); }
   .ft-event-banner.miss { border-left-color: var(--foul-red); }
 
   .ft-event-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
     color: var(--text-dim);
   }
 
+  .ft-event-banner.award .ft-event-label { color: #ffb300; }
+  .ft-event-banner.made .ft-event-label { color: var(--green); }
+  .ft-event-banner.miss .ft-event-label { color: var(--foul-red); }
+
   .ft-event-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 700;
     color: var(--text);
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
-  .ft-event-icon { font-size: 28px; }
+  .ft-event-icon {
+    font-size: 30px;
+    animation: ftIconPop 0.5s ease-out;
+  }
+
+  @keyframes ftIconPop {
+    0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(6deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); }
+  }
 
   /* ─── LAST SCORER ─── */
   .last-scorer-section {
@@ -531,15 +573,15 @@
         </div>
       </div>
 
+      <div class="game-clock-row">
+        <div class="game-clock-label">⏱ TEMPO QUARTO</div>
+        <div class="game-clock" id="timerNumber">10:00</div>
+      </div>
+
       <div class="quarters-container-row">
         <div class="quarter-info">
           <div class="quarter-label">Quarto</div>
           <div class="quarter-number" id="quarterNumber">1</div>
-        </div>
-
-        <div class="timer-info">
-          <div class="quarter-label">Tempo</div>
-          <div class="timer-number" id="timerNumber">10:00</div>
         </div>
 
         <div class="quarters-history" id="quartersHistoryContainer" style="display: none;"></div>
@@ -624,6 +666,13 @@ function updateFirebaseStatus(online) {
   }
 }
 
+function scoreExclamation(delta) {
+  if (delta >= 3) return '🎯 TRIPLA!';
+  if (delta === 2) return '🔥 CANESTRO!';
+  if (delta === 1) return '✅ LIBERO A SEGNO!';
+  return '🏀 PUNTI!';
+}
+
 function detectChanges(data) {
   const homeScore = data.homeScore || 0;
   const awayScore = data.awayScore || 0;
@@ -636,7 +685,7 @@ function detectChanges(data) {
     prevAwayScore = awayScore;
     prevPlayersState = {};
     players.forEach(p => {
-      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0);
+      const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
       prevPlayersState[p.name] = pts;
     });
     return;
@@ -645,24 +694,34 @@ function detectChanges(data) {
   if (homeScore > prevHomeScore) {
     const delta = homeScore - prevHomeScore;
     let scorerName = homeTeam;
-    let pointText = '+' + delta;
+    let scoreDelta = delta;
 
     for (let p of players) {
-      const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0);
+      const currentPts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
       const prevPts = prevPlayersState[p.name] || 0;
       if (currentPts > prevPts) {
         scorerName = p.name;
-        pointText = '+' + (currentPts - prevPts);
+        scoreDelta = currentPts - prevPts;
         break;
       }
     }
 
-    currentNotification = { team: 'home', name: scorerName, text: pointText };
+    currentNotification = {
+      team: 'home',
+      name: scorerName,
+      text: '+' + scoreDelta,
+      headline: scoreExclamation(scoreDelta)
+    };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
   }
   else if (awayScore > prevAwayScore) {
     const delta = awayScore - prevAwayScore;
-    currentNotification = { team: 'away', name: awayTeam, text: '+' + delta };
+    currentNotification = {
+      team: 'away',
+      name: awayTeam,
+      text: '+' + delta,
+      headline: '⚡ Punto avversario'
+    };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
   }
   else if (homeScore < prevHomeScore || awayScore < prevAwayScore) {
@@ -674,7 +733,7 @@ function detectChanges(data) {
   prevAwayScore = awayScore;
   prevPlayersState = {};
   players.forEach(p => {
-    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0);
+    const pts = (p.pt1 || 0) + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3;
     prevPlayersState[p.name] = pts;
   });
 }
@@ -698,7 +757,7 @@ function renderTimerTick() {
     remaining = Math.max(0, (timerEndAt - Date.now()) / 1000);
   }
   el.textContent = formatTime(remaining);
-  el.classList.toggle('running', timerRunning);
+  el.classList.toggle('running', timerRunning && remaining > 60);
   el.classList.toggle('danger', remaining <= 60 && remaining > 0);
 }
 setInterval(renderTimerTick, 250);
@@ -713,11 +772,35 @@ function showFtBanner(ftEvent) {
   const icon = document.getElementById('ftEventIcon');
   if (!banner) return;
 
-  const isMiss = ftEvent.text === 'Tiro libero sbagliato';
-  banner.classList.toggle('miss', isMiss);
-  label.textContent = isMiss ? '❌ Tiro libero sbagliato' : '🎯 Tiri liberi assegnati';
-  name.textContent = ftEvent.name || '-';
-  icon.textContent = isMiss ? '❌' : '🎯';
+  const kind = ftEvent.kind || 'award';
+  const playerName = ftEvent.name || '-';
+
+  banner.classList.remove('miss', 'made', 'award');
+
+  let labelText, nameText, iconText;
+  if (kind === 'award') {
+    banner.classList.add('award');
+    labelText = '🚨 FALLO!';
+    nameText = `Tiri liberi assegnati a ${playerName}`;
+    iconText = '🚨';
+  } else if (kind === 'made') {
+    banner.classList.add('made');
+    labelText = '✅ CANESTRO DALLA LUNETTA!';
+    nameText = `${playerName} segna il libero`;
+    iconText = '✅';
+  } else {
+    banner.classList.add('miss');
+    labelText = '❌ Peccato...';
+    nameText = `${playerName} sbaglia il libero`;
+    iconText = '❌';
+  }
+
+  label.textContent = labelText;
+  name.textContent = nameText;
+  icon.textContent = iconText;
+  icon.style.animation = 'none';
+  void icon.offsetWidth;
+  icon.style.animation = '';
 
   if (ftBannerTimeout) clearTimeout(ftBannerTimeout);
   banner.classList.remove('show');
@@ -800,15 +883,15 @@ function updateUI(data) {
     lastScorerSection.style.display = 'block';
     document.getElementById('lastScorerName').textContent = currentNotification.name;
     pointsEl.textContent = currentNotification.text;
-    
+
     if (currentNotification.team === 'away') {
       lastScorerSection.style.borderLeft = '4px solid #64b5f6';
       pointsEl.style.color = '#64b5f6';
-      labelEl.textContent = '⚡ Canestro avversario';
+      labelEl.textContent = currentNotification.headline || '⚡ Canestro avversario';
     } else {
       lastScorerSection.style.borderLeft = '4px solid var(--orange)';
       pointsEl.style.color = 'var(--orange)';
-      labelEl.textContent = '⭐ Ultimo marcatore';
+      labelEl.textContent = currentNotification.headline || '⭐ Ultimo marcatore';
     }
   } else {
     let topScorer = null;
