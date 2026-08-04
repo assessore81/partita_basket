@@ -1122,15 +1122,15 @@ async function saveToFirebase() {
     const homeName = document.getElementById('homeName').value || 'PONTE DI NONA';
     const awayName = document.getElementById('awayName').value || 'AVVERSARIO';
     
-    const homeScoreWithFt = players.reduce((sum, p) => {
-      return sum + ((p.pt1 || 0) * 1 + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3 + (p.ftMade || 0) * 1);
+    const homeScoreNum = players.reduce((sum, p) => {
+      return sum + ((p.pt1 || 0) * 1 + (p.pt2 || 0) * 2 + (p.pt3 || 0) * 3);
     }, 0);
 
     const docRef = doc(db, "matches", "current");
     await setDoc(docRef, {
       homeTeam: homeName,
       awayTeam: awayName,
-      homeScore: homeScoreWithFt,
+      homeScore: homeScoreNum,
       awayScore: awayScore || 0,
       quarter: quarter || 1,
       players: players || [],
@@ -1211,7 +1211,7 @@ function save() {
   }
 }
 
-function totalPts(p) { return p.pt1 + p.pt2*2 + p.pt3*3 + (p.ftMade || 0); }
+function totalPts(p) { return p.pt1 + p.pt2*2 + p.pt3*3; }
 
 function formatTime(s) {
   s = Math.max(0, Math.round(s));
@@ -1502,6 +1502,7 @@ function addPt(idx, type, delta) {
 function ftAward(idx) {
   window.ftEvent = {
     team: 'home',
+    kind: 'award',
     name: players[idx].name,
     text: 'Tiri liberi assegnati',
     ts: Date.now()
@@ -1518,18 +1519,32 @@ function ftAward(idx) {
 
 function addFt(idx, kind, delta) {
   if (kind === 'made') {
+    // Un libero segnato vale 1 punto: sincronizziamo anche il contatore "1 punto"
     players[idx].ftMade = Math.max(0, (players[idx].ftMade || 0) + delta);
+    players[idx].pt1 = Math.max(0, players[idx].pt1 + delta);
+    document.getElementById(`c1-${idx}`).textContent = players[idx].pt1;
+
+    if (delta > 0) {
+      window.ftEvent = {
+        team: 'home',
+        kind: 'made',
+        name: players[idx].name,
+        text: 'Tiro libero segnato',
+        ts: Date.now()
+      };
+    }
   } else {
     players[idx].ftMissed = Math.max(0, (players[idx].ftMissed || 0) + delta);
-  }
 
-  if (delta > 0 && kind === 'missed') {
-    window.ftEvent = {
-      team: 'home',
-      name: players[idx].name,
-      text: 'Tiro libero sbagliato',
-      ts: Date.now()
-    };
+    if (delta > 0) {
+      window.ftEvent = {
+        team: 'home',
+        kind: 'miss',
+        name: players[idx].name,
+        text: 'Tiro libero sbagliato',
+        ts: Date.now()
+      };
+    }
   }
 
   document.getElementById(`ftm-${idx}`).textContent = players[idx].ftMade || 0;
