@@ -712,6 +712,231 @@
     margin-top: 4px;
   }
 
+  .spectator-name-row {
+    margin-bottom: 18px;
+  }
+  .spectator-name-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .spectator-name-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    padding: 8px 10px;
+    outline: none;
+  }
+  .spectator-name-input:focus { border-color: var(--orange); }
+
+  .reply-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .reply-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 8px;
+    padding: 6px 9px;
+    font-size: 13px;
+  }
+
+  .reply-name {
+    font-weight: 800;
+    color: var(--orange);
+    flex-shrink: 0;
+  }
+
+  .reply-text {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .reply-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .reply-input-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .reply-input {
+    flex: 1;
+    min-width: 0;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+  }
+  .reply-input:focus { border-color: var(--orange); }
+
+  .reply-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--orange);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .reply-send-btn:active { transform: scale(.9); }
+
+  /* ─── STORICO NOTIFICHE ─── */
+  .history-fab {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--blue-mid);
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(21,101,192,0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .history-fab:active { transform: scale(.92); }
+
+  .history-fab-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ef5350;
+    border: 2px solid var(--darker);
+    display: none;
+  }
+  .history-fab-dot.show { display: block; }
+
+  .history-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .history-modal-overlay.open { display: flex; }
+
+  .history-modal {
+    background: var(--dark);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 20px 16px 28px;
+    border-top: 3px solid var(--blue-mid);
+    animation: slideUpVoices .3s ease-out;
+  }
+
+  .history-modal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 18px;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .history-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--text-dim);
+  }
+
+  .history-row.hist-home { border-left-color: var(--orange); }
+  .history-row.hist-away { border-left-color: #64b5f6; }
+  .history-row.hist-ft { border-left-color: #26A69A; }
+
+  .history-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    width: 26px;
+    text-align: center;
+  }
+
+  .history-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .history-time {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .btn-clear-history {
+    width: 100%;
+    background: rgba(239,83,80,0.1);
+    border: 1px solid rgba(239,83,80,0.3);
+    color: var(--foul-red);
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+
   /* ─── NO DATA ─── */
   .no-data {
     text-align: center;
@@ -859,15 +1084,32 @@
   <span class="voices-fab-dot" id="voicesFabDot"></span>
 </button>
 
+<button class="history-fab" id="historyFab" onclick="openHistoryModal()" title="Storico notifiche">
+  📜
+  <span class="history-fab-dot" id="historyFabDot"></span>
+</button>
+
 <div class="voices-modal-overlay" id="voicesModalOverlay">
   <div class="voices-modal">
     <div class="voices-modal-title">🗣️ Voci dallo Stadio</div>
+
+    <div class="spectator-name-row">
+      <label class="spectator-name-label" for="spectatorNameInput">Il tuo nome (facoltativo)</label>
+      <input type="text" class="spectator-name-input" id="spectatorNameInput" maxlength="24" placeholder="Es. Papà di Luca"
+        oninput="localStorage.setItem('live_spectator_name', this.value)">
+    </div>
 
     <div class="voice-row">
       <div class="voice-icon-wrap becero" id="modal-icon-becero"></div>
       <div class="speech-bubble becero">
         <div class="voice-label">Il Tifoso Becero</div>
         <div class="voice-text placeholder" id="modal-text-becero">In attesa di un commento...</div>
+        <div class="reply-thread" id="reply-thread-becero"></div>
+        <div class="reply-input-row">
+          <input type="text" class="reply-input" id="reply-input-becero" maxlength="140" placeholder="Rispondi..."
+            onkeydown="if(event.key==='Enter'){sendReply('becero');}">
+          <button class="reply-send-btn" onclick="sendReply('becero')" title="Invia risposta">➤</button>
+        </div>
       </div>
     </div>
     <div class="voice-row">
@@ -875,6 +1117,12 @@
       <div class="speech-bubble giornalista">
         <div class="voice-label">Il Giornalista Obiettivo</div>
         <div class="voice-text placeholder" id="modal-text-giornalista">In attesa di un commento...</div>
+        <div class="reply-thread" id="reply-thread-giornalista"></div>
+        <div class="reply-input-row">
+          <input type="text" class="reply-input" id="reply-input-giornalista" maxlength="140" placeholder="Rispondi..."
+            onkeydown="if(event.key==='Enter'){sendReply('giornalista');}">
+          <button class="reply-send-btn" onclick="sendReply('giornalista')" style="background:var(--blue-mid);" title="Invia risposta">➤</button>
+        </div>
       </div>
     </div>
     <div class="voice-row">
@@ -882,6 +1130,12 @@
       <div class="speech-bubble sfegatato">
         <div class="voice-label">Il Tifoso Sfegatato</div>
         <div class="voice-text placeholder" id="modal-text-sfegatato">In attesa di un commento...</div>
+        <div class="reply-thread" id="reply-thread-sfegatato"></div>
+        <div class="reply-input-row">
+          <input type="text" class="reply-input" id="reply-input-sfegatato" maxlength="140" placeholder="Rispondi..."
+            onkeydown="if(event.key==='Enter'){sendReply('sfegatato');}">
+          <button class="reply-send-btn" onclick="sendReply('sfegatato')" title="Invia risposta">➤</button>
+        </div>
       </div>
     </div>
 
@@ -889,9 +1143,18 @@
   </div>
 </div>
 
+<div class="history-modal-overlay" id="historyModalOverlay">
+  <div class="history-modal">
+    <div class="history-modal-title">📜 Storico Notifiche</div>
+    <div class="history-list" id="historyList"></div>
+    <button class="btn-clear-history" onclick="clearNotificationHistory()">🗑️ Svuota storico</button>
+    <button class="btn-close-voices" onclick="closeHistoryModal()">Chiudi</button>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtkWH5ekxU7YK-LvXLR0hhb-cyrFmxc34",
@@ -912,6 +1175,16 @@ let prevHomeScore = null;
 let prevAwayScore = null;
 let prevPlayersState = null;
 let currentNotification = JSON.parse(localStorage.getItem('live_last_notification') || 'null');
+let notificationHistory = JSON.parse(localStorage.getItem('live_notification_history') || '[]');
+
+function addToHistory(entry) {
+  const withTs = Object.assign({ ts: Date.now() }, entry);
+  notificationHistory.unshift(withTs);
+  if (notificationHistory.length > 200) notificationHistory = notificationHistory.slice(0, 200);
+  localStorage.setItem('live_notification_history', JSON.stringify(notificationHistory));
+  const dot = document.getElementById('historyFabDot');
+  if (dot && !historyModalOpen) dot.classList.add('show');
+}
 
 /* ─── VOCI DALLO STADIO: pixel art + fumetti ─── */
 const PIXEL_GRIDS = {
@@ -1008,6 +1281,7 @@ const VOICE_LABELS = {
 let prevCommentTs = { becero: null, giornalista: null, sfegatato: null };
 let voiceBannerTimeout = null;
 let voicesModalOpen = false;
+let historyModalOpen = false;
 
 function showVoiceBanner(key, text) {
   const banner = document.getElementById('voiceEventBanner');
@@ -1038,10 +1312,21 @@ function updateVoices(comments) {
 
   ['becero', 'giornalista', 'sfegatato'].forEach(key => {
     const entry = comments[key];
-    if (!entry || !entry.text) return;
-
-    // Aggiorna sempre il contenuto della schermata "vedi tutte"
     const modalTextEl = document.getElementById('modal-text-' + key);
+
+    // Campo vuoto o assente: funge da "pulizia". Aggiorniamo la vista
+    // al placeholder ma NON mostriamo alcuna notifica/banner.
+    if (!entry || !entry.text) {
+      if (modalTextEl) {
+        modalTextEl.textContent = 'In attesa di un commento...';
+        modalTextEl.classList.add('placeholder');
+      }
+      if (entry && typeof entry.ts !== 'undefined') {
+        prevCommentTs[key] = entry.ts;
+      }
+      return;
+    }
+
     if (modalTextEl) {
       modalTextEl.textContent = entry.text;
       modalTextEl.classList.remove('placeholder');
@@ -1066,6 +1351,11 @@ function openVoicesModal() {
   document.getElementById('voicesModalOverlay').classList.add('open');
   document.getElementById('voicesFabDot').classList.remove('show');
   voicesModalOpen = true;
+  const nameEl = document.getElementById('spectatorNameInput');
+  if (nameEl) {
+    const savedName = localStorage.getItem('live_spectator_name');
+    if (savedName) nameEl.value = savedName;
+  }
 }
 
 function closeVoicesModal() {
@@ -1074,6 +1364,106 @@ function closeVoicesModal() {
 }
 window.openVoicesModal = openVoicesModal;
 window.closeVoicesModal = closeVoicesModal;
+
+function renderReplies(commentReplies) {
+  commentReplies = commentReplies || {};
+  ['becero', 'giornalista', 'sfegatato'].forEach(key => {
+    const container = document.getElementById('reply-thread-' + key);
+    if (!container) return;
+    const list = commentReplies[key] || [];
+    if (list.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+    const sorted = [...list].sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    container.innerHTML = sorted.map(r => {
+      const time = new Date(r.ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      return `<div class="reply-item"><span class="reply-name">${escapeHtml(r.name || 'Spettatore')}</span><span class="reply-text">${escapeHtml(r.text)}</span><span class="reply-time">${time}</span></div>`;
+    }).join('');
+  });
+}
+
+async function sendReply(key) {
+  const input = document.getElementById('reply-input-' + key);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const nameEl = document.getElementById('spectatorNameInput');
+  const name = (nameEl && nameEl.value.trim()) || 'Spettatore';
+
+  const reply = { name: name, text: text, ts: Date.now() };
+  input.value = '';
+  input.disabled = true;
+
+  try {
+    await updateDoc(docRef, { [`commentReplies.${key}`]: arrayUnion(reply) });
+  } catch (e) {
+    console.error('Errore invio risposta:', e);
+  }
+  input.disabled = false;
+  input.focus();
+}
+window.sendReply = sendReply;
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function renderHistoryList() {
+  const container = document.getElementById('historyList');
+  if (!container) return;
+  if (notificationHistory.length === 0) {
+    container.innerHTML = '<div class="empty-list-msg">Nessuna notifica ricevuta finora.</div>';
+    return;
+  }
+  container.innerHTML = notificationHistory.map(entry => {
+    const time = new Date(entry.ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    let icon = '🔔', label = '', rowClass = '';
+    if (entry.type === 'score') {
+      icon = entry.team === 'home' ? '🏀' : '⚡';
+      rowClass = entry.team === 'home' ? 'hist-home' : 'hist-away';
+      label = `${escapeHtml(entry.name)} ${escapeHtml(entry.text)}`;
+    } else if (entry.type === 'ft') {
+      rowClass = 'hist-ft';
+      if (entry.kind === 'award') { icon = '🚨'; label = `Tiri liberi assegnati a ${escapeHtml(entry.name)}`; }
+      else if (entry.kind === 'made') { icon = '✅'; label = `${escapeHtml(entry.name)} segna il libero`; }
+      else { icon = '❌'; label = `${escapeHtml(entry.name)} sbaglia il libero`; }
+    }
+    return `<div class="history-row ${rowClass}">
+      <span class="history-icon">${icon}</span>
+      <span class="history-text">${label}</span>
+      <span class="history-time">${time}</span>
+    </div>`;
+  }).join('');
+}
+
+function openHistoryModal() {
+  renderHistoryList();
+  document.getElementById('historyModalOverlay').classList.add('open');
+  document.getElementById('historyFabDot').classList.remove('show');
+  historyModalOpen = true;
+}
+
+function closeHistoryModal() {
+  document.getElementById('historyModalOverlay').classList.remove('open');
+  historyModalOpen = false;
+}
+
+function clearNotificationHistory() {
+  if (confirm('Svuotare lo storico delle notifiche su questo dispositivo?')) {
+    notificationHistory = [];
+    localStorage.setItem('live_notification_history', JSON.stringify(notificationHistory));
+    renderHistoryList();
+  }
+}
+
+window.openHistoryModal = openHistoryModal;
+window.closeHistoryModal = closeHistoryModal;
+window.clearNotificationHistory = clearNotificationHistory;
 
 const unsubscribe = onSnapshot(
   docRef,
@@ -1150,6 +1540,7 @@ function detectChanges(data) {
       headline: scoreExclamation(scoreDelta)
     };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
+    addToHistory({ type: 'score', team: 'home', name: scorerName, text: '+' + scoreDelta });
   }
   else if (awayScore > prevAwayScore) {
     const delta = awayScore - prevAwayScore;
@@ -1160,6 +1551,7 @@ function detectChanges(data) {
       headline: '⚡ Punto avversario'
     };
     localStorage.setItem('live_last_notification', JSON.stringify(currentNotification));
+    addToHistory({ type: 'score', team: 'away', name: awayTeam, text: '+' + delta });
   }
   else if (homeScore < prevHomeScore || awayScore < prevAwayScore) {
     currentNotification = null;
@@ -1176,7 +1568,7 @@ function detectChanges(data) {
 }
 
 function formatTime(s) {
-  s = Math.max(0, Math.round(s));
+  s = Math.max(0, Math.ceil(s));
   const m = Math.floor(s / 60);
   const sec = s % 60;
   return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
@@ -1201,6 +1593,7 @@ setInterval(renderTimerTick, 250);
 
 let prevFtEventTs = null;
 let ftBannerTimeout = null;
+let ftEventInitialized = false;
 
 function showFtBanner(ftEvent) {
   const banner = document.getElementById('ftEventBanner');
@@ -1261,7 +1654,8 @@ function updateUI(data) {
     timerRunning: docTimerRunning = false,
     timerEndAt: docTimerEndAt = null,
     ftEvent = null,
-    comments = null
+    comments = null,
+    commentReplies = null
   } = data;
 
   timerSecondsStatic = timerSeconds;
@@ -1270,11 +1664,17 @@ function updateUI(data) {
   renderTimerTick();
 
   if (ftEvent && ftEvent.ts && ftEvent.ts !== prevFtEventTs) {
+    const isFirstFtLoad = !ftEventInitialized;
     prevFtEventTs = ftEvent.ts;
-    showFtBanner(ftEvent);
+    ftEventInitialized = true;
+    if (!isFirstFtLoad) {
+      showFtBanner(ftEvent);
+      addToHistory({ type: 'ft', kind: ftEvent.kind || 'award', name: ftEvent.name || '-', ts: ftEvent.ts });
+    }
   }
 
   updateVoices(comments);
+  renderReplies(commentReplies);
 
   document.getElementById('homeTeamName').textContent = homeTeam || 'PONTE';
   document.getElementById('awayTeamName').textContent = awayTeam || 'AVV';
