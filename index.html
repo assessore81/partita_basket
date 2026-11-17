@@ -101,6 +101,12 @@
     line-height: 1;
     color: var(--white);
   }
+  .q-partial {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 700; letter-spacing: .5px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
   .score-sep {
     display: flex; align-items: center; padding: 0 8px;
     font-family: 'Barlow Condensed', sans-serif;
@@ -566,6 +572,7 @@
       <div class="score-team home">
         <input class="team-name-input" id="homeName" value="PONTE DI NONA" maxlength="16">
         <div class="score-value" id="homeScore">0</div>
+        <div class="q-partial" id="qPartial">Q1: 0 – 0</div>
       </div>
       <div class="score-sep">—</div>
       <div class="score-team away">
@@ -1370,7 +1377,7 @@ function addAway(delta) {
   
   buzz(15);
   save();
-  document.getElementById('awayScore').textContent = awayScore;
+  updateTotals();
 }
 
 function updateTotals() {
@@ -1387,6 +1394,8 @@ function updateTotals() {
   document.getElementById('totalFouls').textContent = fouls;
   document.getElementById('onCourtCount').textContent = onCourt + "/5";
   document.getElementById('awayScore').textContent = awayScore;
+  const qp = document.getElementById('qPartial');
+  if (qp) qp.textContent = `Q${quarter}: ${pts - quarterStartHome} – ${awayScore - quarterStartAway}`;
 }
 
 function nextQuarter() {
@@ -1418,6 +1427,7 @@ function confirmQuarter(storicise) {
   quarter = quarter >= 4 ? 1 : quarter + 1;
   document.getElementById('quarterBadge').textContent = quarter;
   resetTimerForNewQuarter();
+  updateTotals();
   save();
 }
 
