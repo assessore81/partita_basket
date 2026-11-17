@@ -810,6 +810,7 @@ async function saveToFirebase() {
       timerRunning: (typeof timerRunning !== 'undefined') ? timerRunning : false,
       timerEndAt: (typeof timerEndAt !== 'undefined') ? timerEndAt : null,
       ftEvent: window.ftEvent || null,
+      subEvent: window.subEvent || null,
       comments: (typeof comments !== 'undefined') ? comments : {},
       updatedAt: new Date()
     }, { merge: true });
@@ -1180,6 +1181,7 @@ function subTap(idx) {
       pushUndo();
       p.onCourt = true;
       toast('⬆ Entra ' + shortName(p.name));
+      window.subEvent = { kind: 'in', inName: p.name, ts: Date.now() };
       save();
       renderSubstitutions();
       return;
@@ -1199,6 +1201,7 @@ function subTap(idx) {
     out.onCourt = false;
     inn.onCourt = true;
     toast('🔄 ' + shortName(inn.name) + ' ⬆   ' + shortName(out.name) + ' ⬇');
+    window.subEvent = { kind: 'swap', inName: inn.name, outName: out.name, ts: Date.now() };
     subSel = null;
     save();
   } else {
@@ -1214,6 +1217,7 @@ function subToBench() {
     pushUndo();
     p.onCourt = false;
     toast('⬇ Esce ' + shortName(p.name));
+    window.subEvent = { kind: 'out', outName: p.name, ts: Date.now() };
     save();
   }
   subSel = null;
@@ -1510,6 +1514,7 @@ function confirmReset() {
     quarterHistory = []; quarterStartHome = 0; quarterStartAway = 0;
     window.lastAction = null;
     window.ftEvent = null;
+    window.subEvent = null;
     undoStack = [];
     subSel = null;
     openDetails.clear();
